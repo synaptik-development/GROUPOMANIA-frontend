@@ -5,7 +5,8 @@
 
 ### Prérequis d’installation
 Node : https://dev.mysql.com/downloads/installer/
-Backend de l'application : 
+####
+Backend de l'application : https://github.com/synaptik-development/GROUPOMANIA-backend.git
 
 #### **Dépendances**
 * axios
