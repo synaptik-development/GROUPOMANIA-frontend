@@ -1,0 +1,374 @@
+<template>
+  <!-- sidebar  -->
+  <nav id="sidebar" class="sidebar">
+    <img src="../assets/images/icon-left-font-monochrome-white.png" alt="logo groupomania" />
+
+    <!-- profil connecté -->
+    <div class="current-profile">
+      <h3>MY PROFILE</h3>
+      <strong>{{ currentUsername }}</strong>
+      <span>{{ ifIsAdmin }}</span>
+      <div>
+        <p>
+          profile edited on <span>{{ currentUserCreatedAt }}</span>
+        </p>
+        <p>
+          last modification on <span>{{ currentUserUpdatedAt }}</span>
+        </p>
+      </div>
+    </div>
+    <!-- fin profil connecté -->
+
+    <!-- liens utiles (voir profil, ouvrir formulaire postMessage) -->
+    <div class="action">
+      <router-link to="/profile"><i title="edit my profile" class="fas fa-id-card-alt"></i></router-link>
+      <i title="send a message" @click="openPostMessage" class="fas fa-envelope-open-text"></i>
+    </div>
+    <!-- fin liens utiles  -->
+
+    <!-- membres du réseau (liens pour voir le profil) -->
+    <div class="members">
+      <h3>MEMBERS</h3>
+      <a :key="item.id" v-for="item in users" @click="getUser(item.id)">{{ item.username }}</a>
+    </div>
+    <!-- fin membres du réseau -->
+  </nav>
+  <!-- fin sidebar  -->
+
+  <!-- boutons de contrôle de la sidebar  -->
+  <div class="sidebar-control">
+    <a><i class="far fa-window-close" id="close-nav" @click="closeNav"></i></a>
+    <a><i class="fa fa-bars" id="open-nav" @click="openNav" aria-hidden="true"></i></a>
+  </div>
+  <!-- fin boutons de contrôle -->
+
+  <!-- mur d'actualités  -->
+  <main class="news-wall">
+    <h1>NEWS WALL</h1>
+
+    <Messages :admin="currentUserIsAdmin" />
+
+    <!-- fenêtre profile de l'utilisateur sélectionné -->
+    <div v-if="viewUserProfile" class="user-profil">
+      <i class="far fa-window-close" id="close-nav" @click="closeUserProfile"></i>
+      <p>
+        <strong>User n°{{ userId }}</strong>
+      </p>
+      <p>
+        Username : <strong>{{ username }}</strong>
+      </p>
+      <p>
+        Edited on : <strong>{{ createdAt }}</strong>
+      </p>
+      <p>
+        Moderator profil : <strong>{{ admin }}</strong>
+      </p>
+
+      <!-- liens utiles(réservé profils modérateurs) -->
+      <div v-if="currentUserIsAdmin" class="management">
+        <a @click="changeUserRights(userId)">change rights</a>
+        <a @click="deleteProfile(userId)">delete user</a>
+      </div>
+      <!-- fin liens utiles  -->
+    </div>
+    <!-- fin fenêtre profile de l'utilisateur sélectionné -->
+  </main>
+  <!-- fin mur d'actualités  -->
+</template>
+
+<script>
+import axios from "axios";
+import Messages from "../components/Messages.vue";
+export default {
+  name: "NewsWall",
+
+  components: { Messages },
+
+  data() {
+    return {
+      users: [],
+      currentUsername: "",
+      currentUserCreatedAt: "",
+      currentUserUpdatedAt: "",
+      currentUserIsAdmin: false,
+      userId: "",
+      username: "",
+      createdAt: "",
+      admin: false,
+      adminMessage: "",
+      viewUserProfile: false,
+      errorMessage: "",
+    };
+  },
+
+  computed: {
+    ifIsAdmin() {
+      let isAdmin;
+      if (this.currentUserIsAdmin != true) {
+        isAdmin = "";
+      } else {
+        isAdmin = "moderator profil";
+      }
+      return isAdmin;
+    },
+  },
+
+  beforeMount() {
+    this.getAllUsers();
+  },
+
+  methods: {
+    // mettre en forme la date
+    dateFormater(date) {
+      return new Date(date).toISOString().replace(/T.+/, "");
+    },
+
+    // ouvrir formulaire poster un message
+    openPostMessage() {
+      document.getElementById("post-message").style.display = "flex";
+    },
+
+    // ouvrir sidebar
+    openNav() {
+      document.getElementById("sidebar").style.transform = "translateX(0)";
+      document.getElementById("open-nav").style.visibility = "hidden";
+      document.getElementById("close-nav").style.visibility = "visible";
+    },
+    // fermer sidebar
+    closeNav() {
+      document.getElementById("sidebar").style.transform = "translateX(-300px)";
+      document.getElementById("close-nav").style.visibility = "hidden";
+      document.getElementById("open-nav").style.visibility = "visible";
+    },
+
+    // chercher membres réseau
+    getAllUsers() {
+      axios
+        .get("http://localhost:3000/api/auth/users", {
+          headers: {
+            Authorization: `Bearer ${sessionStorage.token}`,
+          },
+        })
+        .then((res) => {
+          let users = res.data;
+          for (let i = 0; i < users.length; i++) {
+            if (users[i].id != sessionStorage.userId) {
+              this.users.push(users[i]);
+            } else {
+              this.currentUsername = users[i].username;
+              this.currentUserIsAdmin = users[i].admin;
+              this.currentUserCreatedAt = this.dateFormater(users[i].createdAt);
+              this.currentUserUpdatedAt = this.dateFormater(users[i].updatedAt);
+            }
+          }
+        })
+        .catch((error) => {
+          alert(error.response.data.error);
+        });
+    },
+
+    // voir le profile d'un utilisateur
+    getUser(userId) {
+      axios
+        .get(`http://localhost:3000/api/auth/users/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${sessionStorage.token}`,
+          },
+        })
+        .then((res) => {
+          // let user = JSON.stringify(res.data);
+          let userFound = res.data.userFound;
+          this.userId = userFound.id;
+          this.username = userFound.username;
+          this.admin = userFound.admin;
+          this.createdAt = this.dateFormater(userFound.createdAt);
+          this.viewUserProfile = true;
+        })
+        .catch((error) => {
+          alert(error.response.data.error);
+        });
+    },
+
+    // fermer fenêtre profil utilisateur
+    closeUserProfile() {
+      this.viewUserProfile = false;
+    },
+
+    // supprimer profile(privilège modérateur)
+    deleteProfile(userId) {
+      axios
+        .delete(`http://localhost:3000/api/auth/users/${userId}`, {
+          headers: {
+            authorization: `Bearer ${sessionStorage.token}`,
+          },
+        })
+        .then(() => {
+          alert("profil deleted successfully");
+          this.closeUserProfile();
+        })
+        .catch((error) => {
+          alert(error.response.data.error);
+        });
+    },
+
+    // changer les droits utilisateur(privilège modérateur)
+    changeUserRights(userId) {
+      const data = new URLSearchParams();
+
+      if (this.admin == false) {
+        data.append("admin", true);
+      } else {
+        data.append("admin", false);
+      }
+
+      axios
+        .put(`http://localhost:3000/api/auth/users/${userId}/moderator`, data, {
+          headers: {
+            authorization: `Bearer ${sessionStorage.token}`,
+          },
+        })
+        .then(() => {
+          alert("profil updated successfully");
+          this.closeUserProfile();
+        })
+        .catch((error) => {
+          alert(error.response.data.error);
+        });
+    },
+  },
+};
+</script>
+
+<style lang="scss">
+.sidebar {
+  color: white;
+  height: 100%;
+  width: 300px;
+  position: fixed;
+  top: 70px;
+  left: 0;
+  background-color: #2c3e50;
+  overflow: hidden;
+  transition: 0.5s;
+  padding-top: 3.75rem;
+  transform: translateX(-300px);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 1px 1px 2px #2c3e50;
+  img {
+    margin: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  a,
+  i {
+    color: white;
+    text-decoration: none;
+    &:hover {
+      cursor: pointer;
+      color: yellowgreen;
+    }
+  }
+  .current-profile,
+  .members {
+    margin-right: 1rem;
+    margin-left: 1rem;
+    display: flex;
+    flex-direction: column;
+    h3 {
+      font-size: 1.2rem;
+      align-self: center;
+    }
+  }
+  .current-profile {
+    border-top: 1px solid white;
+    border-bottom: 1px solid white;
+    padding-bottom: 1rem;
+    p {
+      font-size: 1rem;
+    }
+    span {
+      color: gray;
+    }
+  }
+  .action {
+    display: flex;
+    justify-content: space-around;
+    margin: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid white;
+  }
+}
+
+.sidebar-control {
+  z-index: 1;
+  i {
+    position: fixed;
+    top: 90px;
+    left: 20px;
+    display: block;
+    &:hover {
+      cursor: pointer;
+    }
+  }
+  #close-nav {
+    visibility: hidden;
+    color: white;
+  }
+  #open-nav {
+    color: #2c3e50;
+  }
+}
+
+//---------------------------------
+.news-wall {
+  transition: margin-left 0.5s;
+  padding: 1rem;
+  width: calc(max-content + 0.5rem);
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 2rem;
+  h1 {
+    padding-top: 1rem;
+    text-shadow: 1px 1px 2px #2c3e50;
+  }
+  .user-profil {
+    position: fixed;
+    top: 100px;
+    width: 500px;
+    padding: 1rem;
+    box-shadow: 1px 1px 2px #2c3e50;
+    border: 1px solid #2c3e50;
+    background-color: white;
+    color: black;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    i {
+      color: black;
+      align-self: flex-end;
+      &:hover {
+        color: orchid;
+        cursor: pointer;
+      }
+    }
+    .management {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 1rem;
+      a {
+        background-color: orchid;
+        color: white;
+        padding: 0.5rem;
+        border-radius: 0.5rem;
+        &:hover {
+          background-color: #fd2d01;
+        }
+      }
+    }
+  }
+}
+</style>
