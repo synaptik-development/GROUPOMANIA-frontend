@@ -1,45 +1,82 @@
 <template>
-  <article class="card" :key="item.id" v-for="item in messages">
+  <article class="card" v-for="message in messages" :key="message.id">
     <div class="post-info">
       <p>
-        Posted on {{ dateFormater(item.createdAt) }}
+        Posted on {{ dateFormater(message.createdAt) }}
         <br />
-        By {{ item.username }}
+        By {{ message.username }}
       </p>
-      <p v-if="item.userId == currentUserId || admin == true" @click="openForm(item.id)" class="modify-message">modify</p>
+      <p
+        v-if="message.userId == currentUserId || admin == true"
+        @click="openForm(message.id)"
+        class="modify-message"
+      >
+        modify
+      </p>
     </div>
-    <img v-if="item.imageUrl != null" :src="item.imageUrl" alt="" />
+    <img v-if="message.imageUrl != null" :src="message.imageUrl" alt="" />
 
     <!-- formulaire modifier un message -->
-    <form :id="[`formUpdateMessage-${item.id}`]" class="form-update-message">
+    <form :id="[`formUpdateMessage-${message.id}`]" class="form-update-message">
       <div class="management">
-        <p @click="deleteMessage(item.id)"><i class="fas fa-trash-alt" title="delete message"></i></p>
-        <i @click="closeForm(item.id)" class="far fa-window-close"></i>
+        <p @click="deleteMessage(message.id)">
+          <i class="fas fa-trash-alt" title="delete message"></i>
+        </p>
+        <i @click="closeForm(message.id)" class="far fa-window-close"></i>
       </div>
       <div class="form-attachement">
-        <input @change="processFile($event)" type="file" id="attachement" name="attachement" title="choose attachement" accept=".png, .jpeg, .jpg, .gif" />
+        <input
+          @change="processFile($event)"
+          type="file"
+          id="attachement"
+          name="attachement"
+          title="choose attachement"
+          accept=".png, .jpeg, .jpg, .gif"
+        />
       </div>
-      <textarea v-model="content" name="message" id="message" rows="1" placeholder="update content"></textarea>
+      <textarea
+        v-model="content"
+        name="message"
+        id="message"
+        rows="1"
+        placeholder="update content"
+      ></textarea>
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
-      <SubmitButton @click="updateMessage(item.id)">UPDATE</SubmitButton>
+      <SubmitButton @click="updateMessage(message.id)">UPDATE</SubmitButton>
     </form>
     <!-- fin formulaire modifier un message -->
 
-    <strong>{{ item.content }}</strong>
+    <strong>{{ message.content }}</strong>
 
-    <Likes :likes="item.likes" :messageId="item.id" />
+    <Likes :likes="message.likes" :messageId="message.id" />
 
-    <Comments :messageId="item.id" :admin="admin" />
+    <Comments :messageId="message.id" :admin="admin" />
   </article>
 
   <!-- formulaire poster un message -->
   <form id="post-message">
     <i @click="closePostMessage" class="far fa-window-close"></i>
-    <textarea v-model="content" name="message" id="message" rows="1" placeholder="edit message"></textarea>
+    <textarea
+      v-model="content"
+      name="message"
+      id="message"
+      rows="1"
+      placeholder="edit message"
+    ></textarea>
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
     <div class="form-attachement">
-      <input @change="processFile($event)" type="file" id="attachement" name="attachement" accept=".png, .jpeg, .jpg, .gif" />
-      <i title="send message" class="fas fa-paper-plane" @click="postMessage"></i>
+      <input
+        @change="processFile($event, $event.file)"
+        type="file"
+        id="attachement"
+        name="attachement"
+        accept=".png, .jpeg, .jpg, .gif"
+      />
+      <i
+        title="send message"
+        class="fas fa-paper-plane"
+        @click="postMessage"
+      ></i>
     </div>
   </form>
   <!-- fin formulaire poster un message -->
@@ -50,6 +87,7 @@ import axios from "axios";
 import Comments from "./Comments.vue";
 import SubmitButton from "./SubmitButton.vue";
 import Likes from "./Likes.vue";
+import { mapActions, mapState } from "vuex";
 export default {
   name: "Messages",
 
@@ -57,12 +95,32 @@ export default {
 
   data() {
     return {
-      currentUserId: sessionStorage.userId,
-      errorMessage: "",
-      messages: [],
-      content: "",
-      image: "",
+      // image: "",
     };
+  },
+
+  computed: {
+    ...mapState(["messages", "currentUserId"]),
+
+    //propriétés calculées bidirectionnelles pour récupérer
+    // la valeur de content, image et errorMessage
+    content: {
+      get() {
+        return this.$store.state.content;
+      },
+      set(value) {
+        this.$store.commit("CHANGE_CONTENT", value);
+      },
+    },
+
+    errorMessage: {
+      get() {
+        return this.$store.state.errorMessage;
+      },
+      set(value) {
+        this.$store.commit("CHANGE_ERROR_MESSAGE", value);
+      },
+    },
   },
 
   props: {
@@ -72,52 +130,12 @@ export default {
     },
   },
 
-  created() {
+  beforeMount() {
     this.getAllMessages();
   },
 
   methods: {
-    // chercher tous les messages
-    getAllMessages() {
-      axios
-        .get("http://localhost:3000/api/messages", {
-          headers: {
-            Authorization: `Bearer ${sessionStorage.token}`,
-          },
-        })
-        .then((res) => {
-          res.data
-            .forEach((message) => {
-              this.messages.push(message);
-            })
-            .catch((error) => {
-              console.log(error.response.data.error);
-            });
-        });
-    },
-
-    // poster un message
-    postMessage() {
-      if (!this.content && !this.image) {
-        return (this.errorMessage = "*nothing to post");
-      }
-      const data = new FormData();
-      data.append("content", this.content);
-      data.append("image", this.image);
-      axios
-        .post("http://localhost:3000/api/messages", data, {
-          headers: {
-            authorization: `Bearer ${sessionStorage.token}`,
-          },
-        })
-        .then((res) => {
-          this.messages.push(res.data);
-          this.closePostMessage();
-        })
-        .catch((error) => {
-          this.errorMessage = error.response.data.error;
-        });
-    },
+    ...mapActions(["getAllMessages", "postMessage", "processFile"]),
 
     // fermer le formulaire pour poster un message
     closePostMessage() {
@@ -126,22 +144,19 @@ export default {
 
     // ouvrir le formulaire "formUpdateMessage-${messageId}"
     openForm(messageId) {
-      document.getElementById(`formUpdateMessage-${messageId}`).style.display = "flex";
+      document.getElementById(`formUpdateMessage-${messageId}`).style.display =
+        "flex";
     },
 
     // fermer le formulaire "formUpdateMessage-${messageId}"
     closeForm(messageId) {
-      document.getElementById(`formUpdateMessage-${messageId}`).style.display = "none";
+      document.getElementById(`formUpdateMessage-${messageId}`).style.display =
+        "none";
     },
 
     // mettre en forme la date
     dateFormater(date) {
       return new Date(date).toISOString().replace(/T.+/, "");
-    },
-
-    // récupérer le nom du fichier
-    processFile(event) {
-      this.image = event.target.files[0];
     },
 
     // modifier un message
@@ -166,7 +181,7 @@ export default {
           this.closeForm(messageId);
         })
         .catch((error) => {
-          this.errorMessage = error.response.data.error;
+          console.log(error.response.data.error);
         });
     },
 

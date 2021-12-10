@@ -84,9 +84,9 @@ export default {
             .forEach((comment) => {
               this.comments.push(comment);
             })
-            .catch((error) => {
-              console.log(error.response.data.error);
-            });
+            // .catch((error) => {
+            //   console.log(error.response.data.error);
+            // });
         });
     },
 
@@ -114,9 +114,9 @@ export default {
         .then(() => {
           alert("comment successfully sent");
         })
-        .catch((error) => {
-          this.errorMessage = error.response.data.error;
-        });
+        // .catch((error) => {
+        //   this.errorMessage = error.response.data.error;
+        // });
     },
 
     // modifier un commentaire
@@ -134,9 +134,9 @@ export default {
         .then(() => {
           alert("comment successfully updated");
         })
-        .catch((error) => {
-          alert(error.response.data.error);
-        });
+        // .catch((error) => {
+        //   alert(error.response.data.error);
+        // });
     },
 
     // supprimer un commentaire
@@ -150,9 +150,9 @@ export default {
         .then(() => {
           alert("comment deleted successfully");
         })
-        .catch((error) => {
-          this.errorMessage = error.response.data.error;
-        });
+        // .catch((error) => {
+        //   this.errorMessage = error.response.data.error;
+        // });
     },
 
     // ouvrir le formulaire "formUpdateComment-:commentId"
