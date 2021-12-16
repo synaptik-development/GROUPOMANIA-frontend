@@ -2,21 +2,39 @@
   <!-- formulaire poster un commentaire -->
   <div class="comment-edit">
     <form class="form-comment">
-      <textarea v-model="content" name="comment" id="comment" placeholder="post a comment"></textarea>
-      <i title="send comment" class="fas fa-paper-plane post-comment" @click="postComment"></i>
+      <textarea
+        v-model="content"
+        name="comment"
+        id="comment"
+        placeholder="post a comment"
+      ></textarea>
+      <i
+        title="send comment"
+        class="fas fa-paper-plane post-comment"
+        @click="postComment()"
+      ></i>
     </form>
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
   </div>
   <!-- fin formulaire poster un commentaire -->
 
   <!-- lien voir commentaires -->
-  <p v-if="comments[0]" class="get-all-comments" @click="showComments">view comments</p>
+  <p v-if="comments[0]" class="get-all-comments" @click="showComments()">
+    view comments
+  </p>
+  <p v-else>No comments</p>
   <!-- lien voir commentaires -->
 
   <!-- commentaires  -->
   <div v-if="!isEmpty" class="all-comments">
     <div class="comment-info" :key="item.id" v-for="item in comments">
-      <p v-if="item.userId == canModify || admin == true" class="modify-comment" @click="openForm(item.id)">modify</p>
+      <p
+        v-if="item.userId == currentUserId || admin == true"
+        class="modify-comment"
+        @click="openForm(item.id)"
+      >
+        modify
+      </p>
       <span>{{ item.username }}</span>
       <br />
       <span class="comment-content">{{ item.content }}</span>
@@ -24,10 +42,19 @@
       <!-- formulaire modifier un commentaire -->
       <form :id="[`formUpdateComment-${item.id}`]" class="form-update-comment">
         <div class="management">
-          <i @click="deleteComment(item.id)" class="fas fa-trash-alt" title="delete comment"></i>
+          <i
+            @click="deleteComment(item.id)"
+            class="fas fa-trash-alt"
+            title="delete comment"
+          ></i>
           <i @click="closeForm(item.id)" class="far fa-window-close"></i>
         </div>
-        <textarea v-model="content" name="comment" id="comment" :placeholder="[`${item.content}`]"></textarea>
+        <textarea
+          v-model="content"
+          name="comment"
+          id="comment"
+          :placeholder="[`${item.content}`]"
+        ></textarea>
         <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
         <SubmitButton @click="updateComment(item.id)">UPDATE</SubmitButton>
       </form>
@@ -38,8 +65,10 @@
 </template>
 
 <script>
+// imports
 import axios from "axios";
 import SubmitButton from "./SubmitButton.vue";
+import { mapState } from "vuex";
 
 export default {
   components: { SubmitButton },
@@ -50,11 +79,13 @@ export default {
       comments: [],
       isEmpty: true,
       content: "",
-      canModify: sessionStorage.userId,
       errorMessage: "",
     };
   },
 
+  computed: {
+    ...mapState(["currentUserId"]),
+  },
   props: {
     messageId: {
       type: Number,
@@ -80,13 +111,9 @@ export default {
           },
         })
         .then((res) => {
-          res.data
-            .forEach((comment) => {
-              this.comments.push(comment);
-            })
-            // .catch((error) => {
-            //   console.log(error.response.data.error);
-            // });
+          res.data.forEach((comment) => {
+            this.comments.push(comment);
+          });
         });
     },
 
@@ -102,57 +129,62 @@ export default {
     // poster un commentaire
     postComment() {
       const data = { content: this.content };
-      if (!this.content) {
-        return (this.errorMessage = "*nothing to post");
-      }
       axios
-        .post(`http://localhost:3000/api/messages/${this.messageId}/comments`, data, {
-          headers: {
-            authorization: `Bearer ${sessionStorage.token}`,
-          },
-        })
+        .post(
+          `http://localhost:3000/api/messages/${this.messageId}/comments`,
+          data,
+          {
+            headers: {
+              authorization: `Bearer ${sessionStorage.token}`,
+            },
+          }
+        )
         .then(() => {
-          alert("comment successfully sent");
+          location.reload();
         })
-        // .catch((error) => {
-        //   this.errorMessage = error.response.data.error;
-        // });
+        .catch((error) => {
+          this.errorMessage = error.response.data.error;
+        });
     },
 
     // modifier un commentaire
     updateComment(commentId) {
       const data = { content: this.content };
-      if (!this.content) {
-        return (this.errorMessage = "*nothing to update");
-      }
       axios
-        .put(`http://localhost:3000/api/messages/${this.messageId}/comments/${commentId}`, data, {
-          headers: {
-            authorization: `Bearer ${sessionStorage.token}`,
-          },
-        })
+        .put(
+          `http://localhost:3000/api/messages/${this.messageId}/comments/${commentId}`,
+          data,
+          {
+            headers: {
+              authorization: `Bearer ${sessionStorage.token}`,
+            },
+          }
+        )
         .then(() => {
           alert("comment successfully updated");
         })
-        // .catch((error) => {
-        //   alert(error.response.data.error);
-        // });
+        .catch((error) => {
+          this.errorMessage = error.response.data.error;
+        });
     },
 
     // supprimer un commentaire
     deleteComment(commentId) {
       axios
-        .delete(`http://localhost:3000/api/messages/${this.messageId}/comments/${commentId}`, {
-          headers: {
-            authorization: `Bearer ${sessionStorage.token}`,
-          },
-        })
+        .delete(
+          `http://localhost:3000/api/messages/${this.messageId}/comments/${commentId}`,
+          {
+            headers: {
+              authorization: `Bearer ${sessionStorage.token}`,
+            },
+          }
+        )
         .then(() => {
           alert("comment deleted successfully");
         })
-        // .catch((error) => {
-        //   this.errorMessage = error.response.data.error;
-        // });
+        .catch((error) => {
+          this.errorMessage = error.response.data.error;
+        });
     },
 
     // ouvrir le formulaire "formUpdateComment-:commentId"
@@ -160,11 +192,14 @@ export default {
       let form = document.getElementById(`formUpdateComment-${commentId}`);
 
       axios
-        .get(`http://localhost:3000/api/messages/${this.messageId}/comments/${commentId}`, {
-          headers: {
-            authorization: `Bearer ${sessionStorage.token}`,
-          },
-        })
+        .get(
+          `http://localhost:3000/api/messages/${this.messageId}/comments/${commentId}`,
+          {
+            headers: {
+              authorization: `Bearer ${sessionStorage.token}`,
+            },
+          }
+        )
         .then(() => {
           form.style.display = "flex";
         });
@@ -183,6 +218,33 @@ export default {
 .comment-edit {
   padding-top: 1rem;
   border-top: 1px solid gray;
+  .form-comment {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    border-radius: 5px;
+    border: 1px solid gray;
+    box-shadow: 1px 1px 2px #2c3e50;
+    textarea {
+      resize: none;
+      border: none;
+      width: 100%;
+      &:focus {
+        border: none;
+        outline: none;
+      }
+    }
+    .post-comment {
+      align-self: flex-end;
+      margin-right: 5px;
+      margin-top: auto;
+      margin-bottom: auto;
+      color: orchid;
+      &:hover {
+        cursor: pointer;
+      }
+    }
+  }
   .error-message {
     color: red;
   }
@@ -229,35 +291,6 @@ export default {
     padding: 0.5rem;
     margin-bottom: 0.5rem;
     margin-top: 0.5rem;
-  }
-}
-
-.form-comment {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  border-radius: 5px;
-  border: 1px solid gray;
-  box-shadow: 1px 1px 2px #2c3e50;
-  textarea {
-    resize: none;
-    border: none;
-    width: 100%;
-
-    &:focus {
-      border: none;
-      outline: none;
-    }
-  }
-  .post-comment {
-    align-self: flex-end;
-    margin-right: 5px;
-    margin-top: auto;
-    margin-bottom: auto;
-    color: orchid;
-    &:hover {
-      cursor: pointer;
-    }
   }
 }
 

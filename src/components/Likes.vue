@@ -11,7 +11,9 @@
 </template>
 
 <script>
+// imports
 import axios from "axios";
+
 export default {
   name: "Likes",
 
@@ -46,9 +48,10 @@ export default {
     },
   },
 
-  beforeMount() {
+  created() {
     this.getWhoLiked(this.messageId);
   },
+  
 
   methods: {
     // voir qui a liké le message
@@ -71,29 +74,20 @@ export default {
       let data;
       if (!this.islikedBy.includes(sessionStorage.userId)) {
         axios
-          .post(`http://localhost:3000/api/messages/${messageId}/likes/like`, data, {
-            headers: {
-              authorization: `Bearer ${sessionStorage.token}`,
-            },
-          })
+          .post(
+            `http://localhost:3000/api/messages/${messageId}/likes/like`,
+            data,
+            {
+              headers: {
+                authorization: `Bearer ${sessionStorage.token}`,
+              },
+            }
+          )
           .then(() => {
             this.islikedBy.push(sessionStorage.userId);
           })
-          .catch(() => {
-            axios
-              .post(
-                `http://localhost:3000/api/messages/${messageId}/likes/removelike`,
-                data,
-                {
-                  headers: {
-                    authorization: `Bearer ${sessionStorage.token}`,
-                  },
-                }
-              )
-              .then(() => {
-                let user = this.islikedBy.indexOf(sessionStorage.userId);
-                this.islikedBy.splice(user, 1);
-              });
+          .catch((err) => {
+            alert(err.response.data.error);
           });
       } else {
         axios
@@ -109,8 +103,12 @@ export default {
           .then(() => {
             let user = this.islikedBy.indexOf(sessionStorage.userId);
             this.islikedBy.splice(user, 1);
+          })
+          .catch((err) => {
+            alert(err.response.data.error);
           });
       }
+      console.log(this.islikedBy.includes(sessionStorage.userId))
     },
   },
 };

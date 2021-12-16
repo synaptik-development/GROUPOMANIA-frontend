@@ -1,55 +1,130 @@
 <template>
   <div class="home">
     <div class="login-window">
-      <img src="../assets/images/icon-left-font-monochrome-black.png" alt="logo groupomania" />
+      <img
+        src="../assets/images/icon-left-font-monochrome-black.png"
+        alt="logo groupomania"
+      />
       <h1>THE SOCIAL NETWORK</h1>
+      <h2 v-if="!formRegister">login</h2>
+      <h2 v-if="formRegister">create new account</h2>
 
-      <!-- formulaire de connexion -->
+      <!-- formulaire de connexion / inscription -->
       <form id="form-user">
-        <input v-model="email" type="email" name="email" id="email" placeholder="email" />
-        <input v-model="password" type="password" name="password" id="password" placeholder="password" />
-        <p class="error-message" v-if="errorMessage != null">{{ errorMessage }}</p>
-        <br />
+        <input
+          v-model="modelEmail"
+          type="email"
+          name="email"
+          id="email"
+          placeholder="email"
+        />
+        <input
+          v-if="formRegister"
+          v-model="modelUsername"
+          type="text"
+          name="username"
+          id="username"
+          placeholder="username"
+        />
+        <input
+          v-model="modelPassword"
+          type="password"
+          name="password"
+          id="password"
+          placeholder="password"
+        />
+        <input
+          v-if="formRegister"
+          v-model="confirmPassword"
+          type="password"
+          name="confirm-password"
+          id="confirm-password"
+          placeholder="confirm password"
+        />
+        <p class="error-message" v-if="errorMessage != null">
+          {{ errorMessage }}
+        </p>
       </form>
-      <!-- fin formulaire de connexion -->
+      <!-- fin formulaire de connexion / inscription -->
 
-      <SubmitButton @click="sendLogin">LOGIN</SubmitButton>
+      <SubmitButton v-if="!formRegister" @click="sendLogin()">LOGIN</SubmitButton>
+      <SubmitButton v-if="formRegister" @click="sendRegister()"
+        >REGISTER</SubmitButton
+      >
       <p>or</p>
-      <router-link to="/register">create account</router-link>
+      <a @click="showFormRegister(); resetState();" v-if="formRegister">login</a>
+      <a @click="showFormRegister(); resetState();" v-if="!formRegister">create account</a>
     </div>
   </div>
 </template>
 
 <script>
-import axios from "axios";
+// imports
 import SubmitButton from "../components/SubmitButton.vue";
+import { mapActions, mapState } from "vuex";
 
 export default {
   name: "Home",
+
   data() {
     return {
-      email: "",
-      password: "",
-      errorMessage: null,
+      formRegister: false,
     };
   },
+
+  computed: {
+    ...mapState(["errorMessage"]),
+
+    //propriétés calculées bidirectionnelles
+    modelEmail: {
+      get() {
+        return this.$store.state.modelEmail;
+      },
+      set(value) {
+        this.$store.commit("CHANGE_MODEL_EMAIL", value);
+      },
+    },
+
+    modelUsername: {
+      get() {
+        return this.$store.state.modelUsername;
+      },
+      set(value) {
+        this.$store.commit("CHANGE_MODEL_USERNAME", value);
+      },
+    },
+
+    modelPassword: {
+      get() {
+        return this.$store.state.modelPassword;
+      },
+      set(value) {
+        this.$store.commit("CHANGE_MODEL_PASSWORD", value);
+      },
+    },
+
+    confirmPassword: {
+      get() {
+        return this.$store.state.confirmPassword;
+      },
+      set(value) {
+        this.$store.commit("CHANGE_CONFIRM_PASSWORD", value);
+      },
+    },
+  },
+
   components: { SubmitButton },
+
   methods: {
-    // se connecter
-    sendLogin() {
-      axios
-        .post("http://localhost:3000/api/auth/login", {
-          email: this.email,
-          password: this.password,
-        })
-        .then((res) => {
-          sessionStorage.setItem("token", res.data.token);
-          sessionStorage.setItem("userId", res.data.userId);
-          window.location.hash = "/newswall";
-        })
-        .catch((error) => {
-          this.errorMessage = error.response.data.error;
-        });
+    ...mapActions(["sendLogin", "sendRegister", "resetState"]),
+
+    // révéler le formulaire d'inscription
+    showFormRegister() {
+      if (this.formRegister == true) {
+        return (this.formRegister = false);
+      } else {
+        return (this.formRegister = true);
+      }
     },
   },
 };
@@ -78,6 +153,12 @@ export default {
     img {
       max-width: 200px;
       object-fit: cover;
+    }
+    a {
+      color: orchid;
+      &:hover {
+        text-decoration: underline;
+      }
     }
     @media screen and (max-width: 720px) {
       margin-top: 0;

@@ -1,7 +1,10 @@
 <template>
   <!-- sidebar  -->
   <nav id="sidebar" class="sidebar">
-    <img src="../assets/images/icon-left-font-monochrome-white.png" alt="logo groupomania" />
+    <img
+      src="../assets/images/icon-left-font-monochrome-white.png"
+      alt="logo groupomania"
+    />
 
     <!-- profil connecté -->
     <div class="current-profile">
@@ -21,15 +24,23 @@
 
     <!-- liens utiles (voir profil, ouvrir formulaire postMessage) -->
     <div class="action">
-      <router-link to="/profile"><i title="edit my profile" class="fas fa-id-card-alt"></i></router-link>
-      <i title="send a message" @click="openPostMessage" class="fas fa-envelope-open-text"></i>
+      <router-link to="/profile"
+        ><i title="edit my profile" class="fas fa-id-card-alt"></i
+      ></router-link>
+      <i
+        title="send a message"
+        @click="openPostMessage()"
+        class="fas fa-envelope-open-text"
+      ></i>
     </div>
     <!-- fin liens utiles  -->
 
     <!-- membres du réseau (liens pour voir le profil) -->
     <div class="members">
       <h3>MEMBERS</h3>
-      <a :key="item.id" v-for="item in users" @click="getUser(item.id)">{{ item.username }}</a>
+      <a :key="user.id" v-for="user in users" @click="getUser(user.id)">{{
+        user.username
+      }}</a>
     </div>
     <!-- fin membres du réseau -->
   </nav>
@@ -37,8 +48,15 @@
 
   <!-- boutons de contrôle de la sidebar  -->
   <div class="sidebar-control">
-    <a><i class="far fa-window-close" id="close-nav" @click="closeNav"></i></a>
-    <a><i class="fa fa-bars" id="open-nav" @click="openNav" aria-hidden="true"></i></a>
+    <a><i class="far fa-window-close" id="close-nav" @click="closeNav()"></i></a>
+    <a
+      ><i
+        class="fa fa-bars"
+        id="open-nav"
+        @click="openNav"
+        aria-hidden="true"
+      ></i
+    ></a>
   </div>
   <!-- fin boutons de contrôle -->
 
@@ -49,8 +67,12 @@
     <Messages :admin="currentUserIsAdmin" />
 
     <!-- fenêtre profile de l'utilisateur sélectionné -->
-    <div v-if="viewUserProfile" class="user-profil">
-      <i class="far fa-window-close" id="close-nav" @click="closeUserProfile"></i>
+    <div class="user-profil">
+      <i
+        class="far fa-window-close"
+        id="close-nav"
+        @click="closeUserProfile()"
+      ></i>
       <p>
         <strong>User n°{{ userId }}</strong>
       </p>
@@ -62,6 +84,9 @@
       </p>
       <p>
         Moderator profil : <strong>{{ admin }}</strong>
+      </p>
+      <p>
+        {{ errorMessage }}
       </p>
 
       <!-- liens utiles(réservé profils modérateurs) -->
@@ -77,8 +102,10 @@
 </template>
 
 <script>
-import axios from "axios";
+// imports
 import Messages from "../components/Messages.vue";
+import { mapActions, mapState } from "vuex";
+
 export default {
   name: "NewsWall",
 
@@ -86,15 +113,6 @@ export default {
 
   data() {
     return {
-      users: [],
-      currentUsername: "",
-      currentUserCreatedAt: "",
-      currentUserUpdatedAt: "",
-      currentUserIsAdmin: false,
-      userId: "",
-      username: "",
-      createdAt: "",
-      admin: false,
       adminMessage: "",
       viewUserProfile: false,
       errorMessage: "",
@@ -102,6 +120,18 @@ export default {
   },
 
   computed: {
+    ...mapState([
+      "users",
+      "currentUsername",
+      "currentUserCreatedAt",
+      "currentUserUpdatedAt",
+      "currentUserIsAdmin",
+      "userId",
+      "username",
+      "createdAt",
+      "admin",
+    ]),
+
     ifIsAdmin() {
       let isAdmin;
       if (this.currentUserIsAdmin != true) {
@@ -115,13 +145,17 @@ export default {
 
   beforeMount() {
     this.getAllUsers();
+    this.getCurrentProfile();
   },
 
   methods: {
-    // mettre en forme la date
-    dateFormater(date) {
-      return new Date(date).toISOString().replace(/T.+/, "");
-    },
+    ...mapActions([
+      "getAllUsers",
+      "getUser",
+      "changeUserRights",
+      "deleteProfile",
+      "getCurrentProfile"
+    ]),
 
     // ouvrir formulaire poster un message
     openPostMessage() {
@@ -141,99 +175,9 @@ export default {
       document.getElementById("open-nav").style.visibility = "visible";
     },
 
-    // chercher membres réseau
-    getAllUsers() {
-      axios
-        .get("http://localhost:3000/api/auth/users", {
-          headers: {
-            Authorization: `Bearer ${sessionStorage.token}`,
-          },
-        })
-        .then((res) => {
-          let users = res.data;
-          for (let i = 0; i < users.length; i++) {
-            if (users[i].id != sessionStorage.userId) {
-              this.users.push(users[i]);
-            } else {
-              this.currentUsername = users[i].username;
-              this.currentUserIsAdmin = users[i].admin;
-              this.currentUserCreatedAt = this.dateFormater(users[i].createdAt);
-              this.currentUserUpdatedAt = this.dateFormater(users[i].updatedAt);
-            }
-          }
-        })
-        .catch((error) => {
-          alert(error.response.data.error);
-        });
-    },
-
-    // voir le profile d'un utilisateur
-    getUser(userId) {
-      axios
-        .get(`http://localhost:3000/api/auth/users/${userId}`, {
-          headers: {
-            Authorization: `Bearer ${sessionStorage.token}`,
-          },
-        })
-        .then((res) => {
-          // let user = JSON.stringify(res.data);
-          let userFound = res.data.userFound;
-          this.userId = userFound.id;
-          this.username = userFound.username;
-          this.admin = userFound.admin;
-          this.createdAt = this.dateFormater(userFound.createdAt);
-          this.viewUserProfile = true;
-        })
-        .catch((error) => {
-          alert(error.response.data.error);
-        });
-    },
-
     // fermer fenêtre profil utilisateur
     closeUserProfile() {
-      this.viewUserProfile = false;
-    },
-
-    // supprimer profile(privilège modérateur)
-    deleteProfile(userId) {
-      axios
-        .delete(`http://localhost:3000/api/auth/users/${userId}`, {
-          headers: {
-            authorization: `Bearer ${sessionStorage.token}`,
-          },
-        })
-        .then(() => {
-          alert("profil deleted successfully");
-          this.closeUserProfile();
-        })
-        .catch((error) => {
-          alert(error.response.data.error);
-        });
-    },
-
-    // changer les droits utilisateur(privilège modérateur)
-    changeUserRights(userId) {
-      const data = new URLSearchParams();
-
-      if (this.admin == false) {
-        data.append("admin", true);
-      } else {
-        data.append("admin", false);
-      }
-
-      axios
-        .put(`http://localhost:3000/api/auth/users/${userId}/moderator`, data, {
-          headers: {
-            authorization: `Bearer ${sessionStorage.token}`,
-          },
-        })
-        .then(() => {
-          alert("profil updated successfully");
-          this.closeUserProfile();
-        })
-        .catch((error) => {
-          alert(error.response.data.error);
-        });
+      document.querySelector(".user-profil").style.display = "none";
     },
   },
 };
@@ -343,7 +287,7 @@ export default {
     border: 1px solid #2c3e50;
     background-color: white;
     color: black;
-    display: flex;
+    display: none;
     flex-direction: column;
     align-items: center;
     i {

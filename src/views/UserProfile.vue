@@ -3,26 +3,42 @@
     <h1>MY PROFILE</h1>
     <main class="edit-profile">
       <div class="management">
-        <strong @click="confirmDelete">delete profile</strong>
-        <router-link to="/newsWall"><i class="far fa-window-close"></i></router-link>
+        <strong @click="confirmDelete()">delete profile</strong>
+        <router-link to="/newsWall" @click="resetState()"
+          ><i class="far fa-window-close"></i
+        ></router-link>
         <router-view />
       </div>
 
       <!-- section username (formulaire caché) -->
       <div>
         <h3>USERNAME</h3>
-        {{ username }}
-        <span @click="showUsernameInput">edit</span>
-        <input v-if="editUsername" v-model="newUsername" type="text" name="username" id="username" placeholder="username" />
+        {{ currentUsername }}
+        <span @click="showUsernameInput()">edit</span>
+        <input
+          v-if="editUsername"
+          v-model="modelUsername"
+          type="text"
+          name="username"
+          id="username"
+          placeholder="username"
+        />
       </div>
       <!-- fin section username  -->
 
       <!-- section email (formulaire caché) -->
       <div>
         <h3>EMAIL</h3>
-        {{ email }}
-        <span @click="showEmailInput">edit</span>
-        <input v-if="editEmail" v-model="newEmail" type="email" name="email" id="email" placeholder="email" />
+        {{ currentUserEmail }}
+        <span @click="showEmailInput()">edit</span>
+        <input
+          v-if="editEmail"
+          v-model="modelEmail"
+          type="email"
+          name="email"
+          id="email"
+          placeholder="email"
+        />
       </div>
       <!-- fin section email  -->
 
@@ -30,22 +46,37 @@
       <div>
         <h3>PASSWORD</h3>
         ********
-        <span @click="showPasswordInput">edit</span>
-        <input v-if="editPassword" v-model="newPassword" type="password" name="password" id="password" placeholder="password" /><br />
-        <input v-if="editPassword" v-model="confirmPassword" type="password" name="confirm-password" id="confirm-password" placeholder="confirm password" />
+        <span @click="showPasswordInput()">edit</span>
+        <input
+          v-if="editPassword"
+          v-model="modelPassword"
+          type="password"
+          name="password"
+          id="password"
+          placeholder="password"
+        /><br />
+        <input
+          v-if="editPassword"
+          v-model="confirmPassword"
+          type="password"
+          name="confirm-password"
+          id="confirm-password"
+          placeholder="confirm password"
+        />
       </div>
       <!-- fin section password  -->
 
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
-      <SubmitButton @click="sendModif">VALIDATE</SubmitButton>
+      <SubmitButton @click="updateProfile()">VALIDATE</SubmitButton>
     </main>
   </div>
 </template>
 
 <script>
-import CryptoJS from "crypto-js";
-import axios from "axios";
+// imports
 import SubmitButton from "../components/SubmitButton.vue";
+import { mapActions, mapState } from "vuex";
+
 export default {
   name: "UserProfile",
 
@@ -53,41 +84,63 @@ export default {
 
   data() {
     return {
-      username: "",
-      email: "",
-      newUsername: "",
-      newEmail: "",
-      newPassword: "",
-      confirmPassword: "",
-      errorMessage: "",
       editUsername: false,
       editEmail: false,
       editPassword: false,
     };
   },
 
-  // voir le profile
-  beforeCreate() {
-    const key = CryptoJS.enc.Hex.parse("000102030405060708090a0b0c0d0e0f");
-    const iv = CryptoJS.enc.Hex.parse("101112131415161718191a1b1c1d1e1f");
-    axios
-      .get(`http://localhost:3000/api/auth/users/${sessionStorage.userId}`, {
-        headers: {
-          Authorization: `Bearer ${sessionStorage.token}`,
-        },
-      })
-      .then((res) => {
-        let decrypted = CryptoJS.AES.decrypt(res.data.userFound.email, key, { iv: iv });
-        let decryptEmail = (res.data.userFound.email = decrypted.toString(CryptoJS.enc.Utf8));
-        this.username = res.data.userFound.username;
-        this.email = decryptEmail;
-      })
-      .catch((error) => {
-        alert(error.response.data.error);
-      });
+  computed: {
+    ...mapState([
+      "currentUsername",
+      "currentUserCreatedAt",
+      "currentUserUpdatedAt",
+      "currentUserIsAdmin",
+      "currentUserEmail",
+      "errorMessage",
+    ]),
+
+    //propriétés calculées bidirectionnelles
+    modelEmail: {
+      get() {
+        return this.$store.state.modelEmail;
+      },
+      set(value) {
+        this.$store.commit("CHANGE_MODEL_EMAIL", value);
+      },
+    },
+
+    modelUsername: {
+      get() {
+        return this.$store.state.modelUsername;
+      },
+      set(value) {
+        this.$store.commit("CHANGE_MODEL_USERNAME", value);
+      },
+    },
+
+    modelPassword: {
+      get() {
+        return this.$store.state.modelPassword;
+      },
+      set(value) {
+        this.$store.commit("CHANGE_MODEL_PASSWORD", value);
+      },
+    },
+
+    confirmPassword: {
+      get() {
+        return this.$store.state.confirmPassword;
+      },
+      set(value) {
+        this.$store.commit("CHANGE_CONFIRM_PASSWORD", value);
+      },
+    },
   },
 
   methods: {
+    ...mapActions(["updateProfile", "resetState", "deleteCurrentProfile"]),
+
     // révéler le formulaire changer de nom
     showUsernameInput() {
       if (this.editUsername == true) {
@@ -115,63 +168,14 @@ export default {
       }
     },
 
-    // modifier le profile
-    sendModif() {
-      const data = new URLSearchParams();
-
-      if (this.newUsername) {
-        data.append("username", this.newUsername);
-      }
-
-      if (this.newEmail) {
-        data.append("email", this.newEmail);
-      }
-
-      if (this.newPassword) {
-        data.append("password", this.newPassword);
-        data.append("confirmPassword", this.confirmPassword);
-      }
-
-      axios
-        .put(`http://localhost:3000/api/auth/users/${sessionStorage.userId}`, data, {
-          headers: {
-            authorization: `Bearer ${sessionStorage.token}`,
-          },
-        })
-        .then(() => {
-          alert("user profile updated successfully");
-        })
-        .catch((error) => {
-          this.errorMessage = error.response.data.error;
-        });
-    },
-
     // confirmer la suppression du profile
     confirmDelete() {
       if (confirm(`your profile will be deleted. Do you want to continue ?`)) {
-        this.deleteProfile();
+        this.deleteCurrentProfile();
+        window.location.hash = "/";
       } else {
         window.location.hash = "/profile";
       }
-    },
-
-    // supprimer le profile
-    deleteProfile() {
-      axios
-        .delete(`http://localhost:3000/api/auth/users/${sessionStorage.userId}`, {
-          headers: {
-            authorization: `Bearer ${sessionStorage.token}`,
-          },
-        })
-        .then((res) => {
-          if (res.ok) {
-            sessionStorage.clear();
-            window.location.hash = "/home";
-          }
-        })
-        .catch((error) => {
-          this.errorMessage = error.response.data.error;
-        });
     },
   },
 };
@@ -197,14 +201,13 @@ export default {
   width: 800px;
   padding: 1rem;
   border-radius: 1rem;
-  box-shadow: 1px 1px 2px #f2f2f2;
-  background-color: #2c3e50;
+  box-shadow: 1px 1px 2px #2c3e50;
+  background-color: #f2f2f2;
   margin: auto;
   margin-top: 2rem;
   margin-bottom: 1rem;
   gap: 1rem;
   position: relative;
-  color: white;
   .management {
     width: 100%;
     display: flex;
@@ -216,36 +219,29 @@ export default {
       color: orchid;
       padding: 0.5rem;
       border-radius: 0.5rem;
+      -webkit-transition: 0.5s ease-in-out;
+      transition: 0.5s ease-in-out;
       &:hover {
         cursor: pointer;
         color: #fd3004;
         border-color: #fd3004;
       }
     }
-    i {
-      color: white;
-      &:hover {
-        color: orchid;
-        cursor: pointer;
-      }
+    i:hover {
+      color: orchid;
+      cursor: pointer;
     }
   }
-  // i {
-  //   position: absolute;
-  //   right: 1rem;
-  //   top: 1rem;
-  //   color: white;
-  //   &:hover {
-  //     color: orchid;
-  //     cursor: pointer;
-  //   }
-  // }
+
   .error-message {
     color: red;
   }
   .btn {
-    color: black;
-    background-color: #ffd7d7;
+    -webkit-transition: 0.5s ease-in-out;
+    transition: 0.5s ease-in-out;
+    &:hover {
+      opacity: 0.8;
+    }
   }
   div {
     display: flex;

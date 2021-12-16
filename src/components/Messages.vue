@@ -2,7 +2,7 @@
   <article class="card" v-for="message in messages" :key="message.id">
     <div class="post-info">
       <p>
-        Posted on {{ dateFormater(message.createdAt) }}
+        Posted on {{ message.createdAt }}
         <br />
         By {{ message.username }}
       </p>
@@ -26,7 +26,7 @@
       </div>
       <div class="form-attachement">
         <input
-          @change="processFile($event)"
+          @change="processFile($event, $event.file)"
           type="file"
           id="attachement"
           name="attachement"
@@ -55,7 +55,13 @@
 
   <!-- formulaire poster un message -->
   <form id="post-message">
-    <i @click="closePostMessage" class="far fa-window-close"></i>
+    <i
+      @click="
+        closePostMessage();
+        resetState();
+      "
+      class="far fa-window-close"
+    ></i>
     <textarea
       v-model="content"
       name="message"
@@ -75,7 +81,7 @@
       <i
         title="send message"
         class="fas fa-paper-plane"
-        @click="postMessage"
+        @click="postMessage()"
       ></i>
     </div>
   </form>
@@ -83,42 +89,27 @@
 </template>
 
 <script>
-import axios from "axios";
+// imports
 import Comments from "./Comments.vue";
 import SubmitButton from "./SubmitButton.vue";
 import Likes from "./Likes.vue";
 import { mapActions, mapState } from "vuex";
+
 export default {
   name: "Messages",
 
   components: { Comments, SubmitButton, Likes },
 
-  data() {
-    return {
-      // image: "",
-    };
-  },
-
   computed: {
-    ...mapState(["messages", "currentUserId"]),
+    ...mapState(["messages", "currentUserId", "errorMessage"]),
 
-    //propriétés calculées bidirectionnelles pour récupérer
-    // la valeur de content, image et errorMessage
+    //propriétés calculées bidirectionnelles
     content: {
       get() {
         return this.$store.state.content;
       },
       set(value) {
         this.$store.commit("CHANGE_CONTENT", value);
-      },
-    },
-
-    errorMessage: {
-      get() {
-        return this.$store.state.errorMessage;
-      },
-      set(value) {
-        this.$store.commit("CHANGE_ERROR_MESSAGE", value);
       },
     },
   },
@@ -135,7 +126,15 @@ export default {
   },
 
   methods: {
-    ...mapActions(["getAllMessages", "postMessage", "processFile"]),
+    ...mapActions([
+      "getAllMessages",
+      "postMessage",
+      "processFile",
+      "updateMessage",
+      "deleteMessage",
+      "dateFormater",
+      "resetState",
+    ]),
 
     // fermer le formulaire pour poster un message
     closePostMessage() {
@@ -153,53 +152,6 @@ export default {
       document.getElementById(`formUpdateMessage-${messageId}`).style.display =
         "none";
     },
-
-    // mettre en forme la date
-    dateFormater(date) {
-      return new Date(date).toISOString().replace(/T.+/, "");
-    },
-
-    // modifier un message
-    updateMessage(messageId) {
-      const data = new FormData();
-      if (!this.content && !this.image) {
-        return (this.errorMessage = "*nothing to update");
-      }
-      if (this.content) {
-        data.append("content", this.content);
-      }
-      if (this.image) {
-        data.append("image", this.image);
-      }
-      axios
-        .put(`http://localhost:3000/api/messages/${messageId}`, data, {
-          headers: {
-            authorization: `Bearer ${sessionStorage.token}`,
-          },
-        })
-        .then(() => {
-          this.closeForm(messageId);
-        })
-        .catch((error) => {
-          console.log(error.response.data.error);
-        });
-    },
-
-    // supprimer un message
-    deleteMessage(messageId) {
-      axios
-        .delete(`http://localhost:3000/api/messages/${messageId}`, {
-          headers: {
-            authorization: `Bearer ${sessionStorage.token}`,
-          },
-        })
-        .then(() => {
-          this.closeForm(messageId);
-        })
-        .catch((error) => {
-          this.errorMessage = error.response.data.error;
-        });
-    },
   },
 };
 </script>
@@ -211,7 +163,6 @@ export default {
   margin: auto;
   display: flex;
   flex-direction: column;
-  background-color: #f2f2f2;
   border-radius: 1rem;
   box-shadow: 1px 1px 2px #2c3e50;
   border: 1px solid #2c3e50;

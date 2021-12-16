@@ -2,7 +2,7 @@
   <header>
     <img src="./assets/images/icon-left-font.png" alt="groupomania" />
 
-    <router-link to="/"><i title="log out" @click="logOut" class="fas fa-sign-out-alt"></i></router-link>
+    <router-link to="/"><i title="log out" @click="logOut()" class="fas fa-sign-out-alt"></i></router-link>
   </header>
 
   <router-view />
@@ -31,7 +31,7 @@ export default {
 header {
   position: fixed;
   background-color: white;
-  z-index: 1;
+  z-index: 2;
   top: 0;
   left: 0;
   right: 0;
