@@ -14,9 +14,8 @@
       <div>
         <h3>USERNAME</h3>
         {{ currentUsername }}
-        <span @click="showUsernameInput()">edit</span>
+        <span @click="showInput(`username`)">edit</span>
         <input
-          v-if="editUsername"
           v-model="modelUsername"
           type="text"
           name="username"
@@ -30,9 +29,8 @@
       <div>
         <h3>EMAIL</h3>
         {{ currentUserEmail }}
-        <span @click="showEmailInput()">edit</span>
+        <span @click="showInput(`email`)">edit</span>
         <input
-          v-if="editEmail"
           v-model="modelEmail"
           type="email"
           name="email"
@@ -46,9 +44,8 @@
       <div>
         <h3>PASSWORD</h3>
         ********
-        <span @click="showPasswordInput()">edit</span>
+        <span @click="showInput(`password`); showInput(`confirm-password`)">edit</span>
         <input
-          v-if="editPassword"
           v-model="modelPassword"
           type="password"
           name="password"
@@ -56,7 +53,6 @@
           placeholder="password"
         /><br />
         <input
-          v-if="editPassword"
           v-model="confirmPassword"
           type="password"
           name="confirm-password"
@@ -81,14 +77,6 @@ export default {
   name: "UserProfile",
 
   components: { SubmitButton },
-
-  data() {
-    return {
-      editUsername: false,
-      editEmail: false,
-      editPassword: false,
-    };
-  },
 
   computed: {
     ...mapState([
@@ -138,33 +126,20 @@ export default {
     },
   },
 
+  beforeMount() {
+    this.getCurrentProfile();
+  },
+
   methods: {
-    ...mapActions(["updateProfile", "resetState", "deleteCurrentProfile"]),
+    ...mapActions(["updateProfile", "resetState", "deleteCurrentProfile", "getCurrentProfile"]),
 
-    // révéler le formulaire changer de nom
-    showUsernameInput() {
-      if (this.editUsername == true) {
-        return (this.editUsername = false);
+    // révéler le formulaire 
+    showInput(target) {
+      let input = document.getElementById(target);
+      if (getComputedStyle(input).display != "none") {
+        input.style.display = "none";
       } else {
-        return (this.editUsername = true);
-      }
-    },
-
-    // révéler le formulaire changer d'email
-    showEmailInput() {
-      if (this.editEmail == true) {
-        return (this.editEmail = false);
-      } else {
-        return (this.editEmail = true);
-      }
-    },
-
-    // révéler le formulaire changer de mot de passe
-    showPasswordInput() {
-      if (this.editPassword == true) {
-        return (this.editPassword = false);
-      } else {
-        return (this.editPassword = true);
+        input.style.display = "block";
       }
     },
 
@@ -250,6 +225,7 @@ export default {
     input {
       height: 30px;
       width: 250px;
+      display: none;
     }
     span {
       color: royalblue;

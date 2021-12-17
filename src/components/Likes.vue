@@ -51,7 +51,6 @@ export default {
   created() {
     this.getWhoLiked(this.messageId);
   },
-  
 
   methods: {
     // voir qui a liké le message
@@ -72,7 +71,6 @@ export default {
     // liker/retirer-mention
     likeMessage(messageId) {
       let data;
-      if (!this.islikedBy.includes(sessionStorage.userId)) {
         axios
           .post(
             `http://localhost:3000/api/messages/${messageId}/likes/like`,
@@ -86,29 +84,22 @@ export default {
           .then(() => {
             this.islikedBy.push(sessionStorage.userId);
           })
-          .catch((err) => {
-            alert(err.response.data.error);
+          .catch(() => {
+            axios
+              .post(
+                `http://localhost:3000/api/messages/${messageId}/likes/removelike`,
+                data,
+                {
+                  headers: {
+                    authorization: `Bearer ${sessionStorage.token}`,
+                  },
+                }
+              )
+              .then(() => {
+                let user = this.islikedBy.indexOf(sessionStorage.userId);
+                this.islikedBy.splice(user, 1);
+              });
           });
-      } else {
-        axios
-          .post(
-            `http://localhost:3000/api/messages/${messageId}/likes/removelike`,
-            data,
-            {
-              headers: {
-                authorization: `Bearer ${sessionStorage.token}`,
-              },
-            }
-          )
-          .then(() => {
-            let user = this.islikedBy.indexOf(sessionStorage.userId);
-            this.islikedBy.splice(user, 1);
-          })
-          .catch((err) => {
-            alert(err.response.data.error);
-          });
-      }
-      console.log(this.islikedBy.includes(sessionStorage.userId))
     },
   },
 };

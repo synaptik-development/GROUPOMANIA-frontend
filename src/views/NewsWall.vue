@@ -48,7 +48,9 @@
 
   <!-- boutons de contrôle de la sidebar  -->
   <div class="sidebar-control">
-    <a><i class="far fa-window-close" id="close-nav" @click="closeNav()"></i></a>
+    <a
+      ><i class="far fa-window-close" id="close-nav" @click="closeNav()"></i
+    ></a>
     <a
       ><i
         class="fa fa-bars"
@@ -154,7 +156,8 @@ export default {
       "getUser",
       "changeUserRights",
       "deleteProfile",
-      "getCurrentProfile"
+      "getCurrentProfile",
+      "dateFormater",
     ]),
 
     // ouvrir formulaire poster un message
