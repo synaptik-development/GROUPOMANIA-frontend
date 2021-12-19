@@ -31,6 +31,7 @@ export default createStore({
     username: "",
     createdAt: "",
     admin: false,
+    adminMessage: "",
   },
 
   // --------------------------------------------------------------------------------------------
@@ -63,6 +64,15 @@ export default createStore({
         message.createdAt = formatDate.getDate() + "/" + formatDate.getMonth() + "/" + formatDate.getFullYear();
       });
       return state.messages;
+    },
+
+    adminMessage: (state) => {
+      if (state.currentUserIsAdmin != true) {
+        state.adminMessage = "";
+      } else {
+        state.adminMessage = "moderator profil";
+      }
+      return state.adminMessage;
     },
   },
 

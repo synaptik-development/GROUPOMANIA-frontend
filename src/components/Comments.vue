@@ -29,7 +29,7 @@
   <div v-if="!isEmpty" class="all-comments">
     <div class="comment-info" :key="item.id" v-for="item in comments">
       <p
-        v-if="item.userId == currentUserId || admin == true"
+        v-if="item.userId == currentUserId || currentUserIsAdmin"
         class="modify-comment"
         @click="openForm(item.id)"
       >
@@ -84,16 +84,12 @@ export default {
   },
 
   computed: {
-    ...mapState(["currentUserId"]),
+    ...mapState(["currentUserId", "currentUserIsAdmin"]),
   },
   props: {
     messageId: {
       type: Number,
       required: true,
-    },
-    admin: {
-      type: Boolean,
-      require: true,
     },
   },
 

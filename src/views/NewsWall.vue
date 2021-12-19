@@ -10,7 +10,7 @@
     <div class="current-profile">
       <h3>MY PROFILE</h3>
       <strong>{{ currentUsername }}</strong>
-      <span>{{ ifIsAdmin }}</span>
+      <span>{{ adminMessage }}</span>
       <div>
         <p>
           profile edited on <span>{{ currentUserCreatedAt }}</span>
@@ -66,14 +66,17 @@
   <main class="news-wall">
     <h1>NEWS WALL</h1>
 
-    <Messages :admin="currentUserIsAdmin" />
+    <Messages />
 
     <!-- fenêtre profile de l'utilisateur sélectionné -->
     <div class="user-profil">
       <i
         class="far fa-window-close"
         id="close-nav"
-        @click="closeUserProfile()"
+        @click="
+          closeUserProfile();
+          resetState();
+        "
       ></i>
       <p>
         <strong>User n°{{ userId }}</strong>
@@ -87,7 +90,7 @@
       <p>
         Moderator profil : <strong>{{ admin }}</strong>
       </p>
-      <p>
+      <p v-if="errorMessage">
         {{ errorMessage }}
       </p>
 
@@ -113,19 +116,12 @@ export default {
 
   components: { Messages },
 
-  data() {
-    return {
-      adminMessage: "",
-      viewUserProfile: false,
-      errorMessage: "",
-    };
-  },
-
   computed: {
     ...mapGetters([
       "currentUserCreatedAt",
       "currentUserUpdatedAt",
       "createdAt",
+      "adminMessage",
     ]),
 
     ...mapState([
@@ -135,17 +131,9 @@ export default {
       "userId",
       "username",
       "admin",
+      "errorMessage",
+      "resetState",
     ]),
-
-    ifIsAdmin() {
-      let isAdmin;
-      if (this.currentUserIsAdmin != true) {
-        isAdmin = "";
-      } else {
-        isAdmin = "moderator profil";
-      }
-      return isAdmin;
-    },
   },
 
   beforeMount() {

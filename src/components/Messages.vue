@@ -7,7 +7,7 @@
         By {{ message.username }}
       </p>
       <p
-        v-if="message.userId == currentUserId || admin == true"
+        v-if="message.userId == currentUserId || currentUserIsAdmin"
         @click="openForm(message.id)"
         class="modify-message"
       >
@@ -50,7 +50,7 @@
 
     <Likes :likes="message.likes" :messageId="message.id" />
 
-    <Comments :messageId="message.id" :admin="admin" />
+    <Comments :messageId="message.id" />
   </article>
 
   <!-- formulaire poster un message -->
@@ -103,7 +103,7 @@ export default {
   computed: {
     ...mapGetters(["messages"]),
 
-    ...mapState(["currentUserId", "errorMessage"]),
+    ...mapState(["currentUserId", "errorMessage", "currentUserIsAdmin"]),
 
     //propriétés calculées bidirectionnelles
     content: {
@@ -115,17 +115,6 @@ export default {
       },
     },
   },
-
-  props: {
-    admin: {
-      type: Boolean,
-      require: true,
-    },
-  },
-
-  // beforeMount() {
-  //   this.getAllMessages();
-  // },
 
   methods: {
     ...mapActions([
