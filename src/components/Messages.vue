@@ -93,7 +93,7 @@
 import Comments from "./Comments.vue";
 import SubmitButton from "./SubmitButton.vue";
 import Likes from "./Likes.vue";
-import { mapActions, mapState } from "vuex";
+import { mapActions, mapGetters, mapState } from "vuex";
 
 export default {
   name: "Messages",
@@ -101,7 +101,9 @@ export default {
   components: { Comments, SubmitButton, Likes },
 
   computed: {
-    ...mapState(["messages", "currentUserId", "errorMessage"]),
+    ...mapGetters(["messages"]),
+
+    ...mapState(["currentUserId", "errorMessage"]),
 
     //propriétés calculées bidirectionnelles
     content: {
@@ -121,9 +123,9 @@ export default {
     },
   },
 
-  beforeMount() {
-    this.getAllMessages();
-  },
+  // beforeMount() {
+  //   this.getAllMessages();
+  // },
 
   methods: {
     ...mapActions([
@@ -132,7 +134,6 @@ export default {
       "processFile",
       "updateMessage",
       "deleteMessage",
-      "dateFormater",
       "resetState",
     ]),
 

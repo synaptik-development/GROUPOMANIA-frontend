@@ -106,7 +106,7 @@
 <script>
 // imports
 import Messages from "../components/Messages.vue";
-import { mapActions, mapState } from "vuex";
+import { mapActions, mapGetters, mapState } from "vuex";
 
 export default {
   name: "NewsWall",
@@ -122,15 +122,18 @@ export default {
   },
 
   computed: {
+    ...mapGetters([
+      "currentUserCreatedAt",
+      "currentUserUpdatedAt",
+      "createdAt",
+    ]),
+
     ...mapState([
       "users",
       "currentUsername",
-      "currentUserCreatedAt",
-      "currentUserUpdatedAt",
       "currentUserIsAdmin",
       "userId",
       "username",
-      "createdAt",
       "admin",
     ]),
 
@@ -148,6 +151,7 @@ export default {
   beforeMount() {
     this.getAllUsers();
     this.getCurrentProfile();
+    this.getAllMessages();
   },
 
   methods: {
@@ -157,7 +161,7 @@ export default {
       "changeUserRights",
       "deleteProfile",
       "getCurrentProfile",
-      "dateFormater",
+      "getAllMessages",
     ]),
 
     // ouvrir formulaire poster un message

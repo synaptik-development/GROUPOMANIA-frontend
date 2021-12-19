@@ -36,7 +36,35 @@ export default createStore({
   // --------------------------------------------------------------------------------------------
   // getters
   // --------------------------------------------------------------------------------------------
-  getters: {},
+  getters: {
+    // dateFormater: (state) => (date) => {
+    //   let formatDate = new Date(state.currentUserCreatedAt);
+    //   return formatDate.getDate() + "/" + formatDate.getMonth() + "/" + formatDate.getFullYear();
+    // },
+
+    currentUserCreatedAt: (state) => {
+      let formatDate = new Date(state.currentUserCreatedAt);
+      return formatDate.getDate() + "/" + formatDate.getMonth() + "/" + formatDate.getFullYear();
+    },
+
+    currentUserUpdatedAt: (state) => {
+      let formatDate = new Date(state.currentUserUpdatedAt);
+      return formatDate.getDate() + "/" + formatDate.getMonth() + "/" + formatDate.getFullYear();
+    },
+
+    createdAt: (state) => {
+      let formatDate = new Date(state.createdAt);
+      return formatDate.getDate() + "/" + formatDate.getMonth() + "/" + formatDate.getFullYear();
+    },
+
+    messages: (state) => {
+      state.messages.forEach((message) => {
+        let formatDate = new Date(message.createdAt);
+        message.createdAt = formatDate.getDate() + "/" + formatDate.getMonth() + "/" + formatDate.getFullYear();
+      });
+      return state.messages;
+    },
+  },
 
   // --------------------------------------------------------------------------------------------
   // mutations
@@ -89,7 +117,7 @@ export default createStore({
 
     POST_MESSAGE(state, message) {
       state.messages.push(message);
-      location.reload();
+      // location.reload();
     },
     // ------- fin contrôle des messages ------- //
 
@@ -145,14 +173,14 @@ export default createStore({
     // ---------------------- //
     // ------- utils ------- //
 
+    // récupérer fichier
+    processFile(event, file) {
+      this.state.image = file.target.files[0];
+    },
+
     // remmettre state à zéro
     resetState({ commit }) {
       commit("RESET_STATE");
-    },
-
-    // mettre en forme la date
-    dateFormater(date) {
-      return new Date(date).toISOString().replace(/T.+/, "");
     },
     // ------- fin utils ------- //
 
@@ -234,11 +262,6 @@ export default createStore({
         .catch((err) => {
           commit("ERROR_API", err.response.data.error);
         });
-    },
-
-    // récupérer fichier
-    processFile(event, file) {
-      this.state.image = file.target.files[0];
     },
     // ------- fin contrôle des messages ------- //
 
