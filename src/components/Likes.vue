@@ -6,7 +6,7 @@
       id="icon-like"
       @click="likeMessage(messageId)"
     ></i>
-    {{ islikedBy.length }}
+    {{ likes }}
   </p>
 </template>
 
@@ -19,7 +19,7 @@ export default {
 
   data() {
     return {
-      islikedBy: [],
+      isliked: "",
       isActive: "active",
     };
   },
@@ -39,16 +39,14 @@ export default {
     // voir si le message est déjà liké par l'utilisateur connecté
     getIfAlreadyLiked() {
       let alreadyLiked;
-      this.islikedBy.forEach((element) => {
-        if (element == sessionStorage.userId) {
-          alreadyLiked = { active: this.isActive };
-        }
-      });
+      if (this.isliked == sessionStorage.userId) {
+        alreadyLiked = { active: this.isActive };
+      }
       return alreadyLiked;
     },
   },
 
-  created() {
+  mounted() {
     this.getWhoLiked(this.messageId);
   },
 
@@ -62,44 +60,29 @@ export default {
           },
         })
         .then((res) => {
-          res.data.forEach((item) => {
-            this.islikedBy.push(item.userId);
-          });
+          if (res.data) {
+            this.isliked = res.data.userId;
+          }
         });
     },
 
     // liker/retirer-mention
     likeMessage(messageId) {
       let data;
-        axios
-          .post(
-            `http://localhost:3000/api/messages/${messageId}/likes/like`,
-            data,
-            {
-              headers: {
-                authorization: `Bearer ${sessionStorage.token}`,
-              },
-            }
-          )
-          .then(() => {
-            this.islikedBy.push(sessionStorage.userId);
-          })
-          .catch(() => {
-            axios
-              .post(
-                `http://localhost:3000/api/messages/${messageId}/likes/removelike`,
-                data,
-                {
-                  headers: {
-                    authorization: `Bearer ${sessionStorage.token}`,
-                  },
-                }
-              )
-              .then(() => {
-                let user = this.islikedBy.indexOf(sessionStorage.userId);
-                this.islikedBy.splice(user, 1);
-              });
-          });
+      if (this.isliked != sessionStorage.userId) {
+        data = { like: 1 };
+      } else {
+        data = { like: 0 };
+      }
+      axios
+        .post(`http://localhost:3000/api/messages/${messageId}/likes`, data, {
+          headers: {
+            authorization: `Bearer ${sessionStorage.token}`,
+          },
+        })
+        .then((res) => {
+          console.log(res.data);
+        });
     },
   },
 };

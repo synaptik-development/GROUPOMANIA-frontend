@@ -22,7 +22,7 @@
         <p @click="deleteMessage(message.id)">
           <i class="fas fa-trash-alt" title="delete message"></i>
         </p>
-        <i @click="closeForm(message.id)" class="far fa-window-close"></i>
+        <i @click="closeForm(message.id); resetState();" class="far fa-window-close"></i>
       </div>
       <div class="form-attachement">
         <input

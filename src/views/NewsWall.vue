@@ -136,7 +136,7 @@ export default {
     ]),
   },
 
-  beforeMount() {
+  mounted() {
     this.getAllUsers();
     this.getCurrentProfile();
     this.getAllMessages();

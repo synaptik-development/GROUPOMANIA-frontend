@@ -2,15 +2,18 @@
   <header>
     <img src="./assets/images/icon-left-font.png" alt="groupomania" />
 
-    <router-link to="/"><i title="log out" @click="logOut()" class="fas fa-sign-out-alt"></i></router-link>
+    <router-link to="/"><i title="log out" @click="logOut(); resetState();" class="fas fa-sign-out-alt"></i></router-link>
   </header>
 
   <router-view />
 </template>
 
 <script>
+import { mapActions } from 'vuex';
 export default {
   methods: {
+    ...mapActions(["resetState"]),
+
     logOut() {
       sessionStorage.clear();
     },
