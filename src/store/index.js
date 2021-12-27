@@ -1,6 +1,7 @@
 import { createStore } from "vuex";
 import axios from "axios";
 import CryptoJS from "crypto-js";
+import functionsUtils from "../Utils/Functions";
 
 export default createStore({
   // --------------------------------------------------------------------------------------------
@@ -13,6 +14,7 @@ export default createStore({
     modelEmail: "",
     modelPassword: "",
     confirmPassword: "",
+    headers: "",
 
     // messages
     messages: [],
@@ -32,36 +34,34 @@ export default createStore({
     createdAt: "",
     admin: false,
     adminMessage: "",
+
+    comments: [],
   },
 
   // --------------------------------------------------------------------------------------------
   // getters
   // --------------------------------------------------------------------------------------------
   getters: {
-    // dateFormater: (state) => (date) => {
-    //   let formatDate = new Date(state.currentUserCreatedAt);
-    //   return formatDate.getDate() + "/" + formatDate.getMonth() + "/" + formatDate.getFullYear();
-    // },
+    headers: (state) => {
+      state.headers = { headers: { authorization: `Bearer ${sessionStorage.token}` } };
+      return state.headers;
+    },
 
     currentUserCreatedAt: (state) => {
-      let formatDate = new Date(state.currentUserCreatedAt);
-      return formatDate.getDate() + "/" + formatDate.getMonth() + "/" + formatDate.getFullYear();
+      return new Date(state.currentUserCreatedAt).toLocaleDateString();
     },
 
     currentUserUpdatedAt: (state) => {
-      let formatDate = new Date(state.currentUserUpdatedAt);
-      return formatDate.getDate() + "/" + formatDate.getMonth() + "/" + formatDate.getFullYear();
+      return new Date(state.currentUserUpdatedAt).toLocaleDateString();
     },
 
     createdAt: (state) => {
-      let formatDate = new Date(state.createdAt);
-      return formatDate.getDate() + "/" + formatDate.getMonth() + "/" + formatDate.getFullYear();
+      return new Date(state.createdAt).toLocaleDateString();
     },
 
     messages: (state) => {
       state.messages.forEach((message) => {
-        let formatDate = new Date(message.createdAt);
-        message.createdAt = formatDate.getDate() + "/" + formatDate.getMonth() + "/" + formatDate.getFullYear();
+        message.createdAt = new Date(message.createdAt).toLocaleDateString();
       });
       return state.messages;
     },
@@ -174,8 +174,15 @@ export default createStore({
       alert(message);
       location.reload();
     },
+
+    GET_COMMENTS(state, comments) {
+      if(comments[0]) {
+      state.comments = comments;
+      }else {state.comments = "no comments";}
+    },
   },
 
+  
   // --------------------------------------------------------------------------------------------
   // actions
   // --------------------------------------------------------------------------------------------
@@ -197,21 +204,25 @@ export default createStore({
     // ------------------------------------- //
     // ------- contrôle des messages ------- //
 
+    // // chercher tous les messages
+    // getAllMessages({ commit }) {
+    //   axios.get("http://localhost:3000/api/messages", this.getters.headers).then((res) => {
+    //     commit("GET_MESSAGES", res.data);
+    //   });
+    // },
+
     // chercher tous les messages
-    getAllMessages({ commit }) {
-      axios
-        .get("http://localhost:3000/api/messages", {
-          headers: {
-            Authorization: `Bearer ${sessionStorage.token}`,
-          },
-        })
-        .then((res) => {
-          commit("GET_MESSAGES", res.data);
-        });
+    async getAllMessages({ commit }) {
+      try {
+        const data = await functionsUtils.getHTTP("http://localhost:3000/api/messages");
+        commit("GET_MESSAGES", data);
+      } catch (err) {
+        commit("ERROR_API", err.response.data.error);
+      }
     },
 
     // poster un message
-    postMessage({ commit }) {
+    async postMessage({ commit }) {
       const formData = new FormData();
 
       if (this.state.content) {
@@ -220,20 +231,35 @@ export default createStore({
       if (this.state.image) {
         formData.append("image", this.state.image);
       }
-      axios
-        .post("http://localhost:3000/api/messages", formData, {
-          headers: {
-            authorization: `Bearer ${sessionStorage.token}`,
-          },
-        })
-        .then((res) => {
-          commit("POST_MESSAGE", res.data);
-          document.getElementById("post-message").style.display = "none";
-        })
-        .catch((err) => {
-          commit("ERROR_API", err.response.data.error);
-        });
+      try {
+        const data = await functionsUtils.postHTTP("http://localhost:3000/api/messages", formData);
+        commit("POST_MESSAGE", data);
+        document.getElementById("post-message").style.display = "none";
+      } catch (err) {
+        commit("ERROR_API", err.response.data.error);
+      }
     },
+
+    // // poster un message
+    // postMessage({ commit }) {
+    //   const formData = new FormData();
+
+    //   if (this.state.content) {
+    //     formData.append("content", this.state.content);
+    //   }
+    //   if (this.state.image) {
+    //     formData.append("image", this.state.image);
+    //   }
+    //   axios
+    //     .post("http://localhost:3000/api/messages", formData, this.getters.headers)
+    //     .then((res) => {
+    //       commit("POST_MESSAGE", res.data);
+    //       document.getElementById("post-message").style.display = "none";
+    //     })
+    //     .catch((err) => {
+    //       commit("ERROR_API", err.response.data.error);
+    //     });
+    // },
 
     // modifier un message
     updateMessage({ commit }, messageId) {
@@ -245,11 +271,7 @@ export default createStore({
         data.append("image", this.state.image);
       }
       axios
-        .put(`http://localhost:3000/api/messages/${messageId}`, data, {
-          headers: {
-            authorization: `Bearer ${sessionStorage.token}`,
-          },
-        })
+        .put(`http://localhost:3000/api/messages/${messageId}`, data, this.getters.headers)
         .then(() => {
           commit("RESET_STATE");
         })
@@ -261,11 +283,7 @@ export default createStore({
     // supprimer un message
     deleteMessage({ commit }, messageId) {
       axios
-        .delete(`http://localhost:3000/api/messages/${messageId}`, {
-          headers: {
-            authorization: `Bearer ${sessionStorage.token}`,
-          },
-        })
+        .delete(`http://localhost:3000/api/messages/${messageId}`, this.getters.headers)
         .then(() => {
           location.reload();
         })
@@ -274,6 +292,22 @@ export default createStore({
         });
     },
     // ------- fin contrôle des messages ------- //
+
+    // ------------------------------------- //
+    // ------- contrôle des commentaires ------- //
+    async getComments({ commit }, messageId) {
+        try {
+          const data = await functionsUtils.getHTTP(`http://localhost:3000/api/messages/${messageId}/comments`);
+          commit("GET_COMMENTS", data);
+        } catch (err) {
+          commit("ERROR_API", err.response.data.error);
+        }
+    },
+    // ------- fin contrôle des commentaires ------- //
+
+    // ------------------------------------- //
+    // ------- contrôle des likes ------- //
+    // ------- fin contrôle des likes ------- //
 
     // ------------------------------------------ //
     // ------- contrôle des utilisateurs ------- //
@@ -321,42 +355,24 @@ export default createStore({
 
     // chercher membres réseau
     getAllUsers({ commit }) {
-      axios
-        .get("http://localhost:3000/api/auth/users", {
-          headers: {
-            Authorization: `Bearer ${sessionStorage.token}`,
-          },
-        })
-        .then((res) => {
-          commit("GET_USERS", res.data);
-        });
+      axios.get("http://localhost:3000/api/auth/users", this.getters.headers).then((res) => {
+        commit("GET_USERS", res.data);
+      });
     },
 
     // voir le profile d'un utilisateur
     getUser({ commit }, userId) {
-      axios
-        .get(`http://localhost:3000/api/auth/users/${userId}`, {
-          headers: {
-            Authorization: `Bearer ${sessionStorage.token}`,
-          },
-        })
-        .then((res) => {
-          commit("GET_USER", res.data.userFound);
-          document.querySelector(".user-profil").style.display = "flex";
-        });
+      axios.get(`http://localhost:3000/api/auth/users/${userId}`, this.getters.headers).then((res) => {
+        commit("GET_USER", res.data.userFound);
+        document.querySelector(".user-profil").style.display = "flex";
+      });
     },
 
     // profil connecté
     getCurrentProfile({ commit }) {
-      axios
-        .get(`http://localhost:3000/api/auth/users/${sessionStorage.userId}`, {
-          headers: {
-            Authorization: `Bearer ${sessionStorage.token}`,
-          },
-        })
-        .then((res) => {
-          commit("GET_CURRENT_PROFILE", res.data.userFound);
-        });
+      axios.get(`http://localhost:3000/api/auth/users/${sessionStorage.userId}`, this.getters.headers).then((res) => {
+        commit("GET_CURRENT_PROFILE", res.data.userFound);
+      });
     },
 
     // modifier le profil connecté
@@ -377,11 +393,7 @@ export default createStore({
       }
 
       axios
-        .put(`http://localhost:3000/api/auth/users/${sessionStorage.userId}`, data, {
-          headers: {
-            authorization: `Bearer ${sessionStorage.token}`,
-          },
-        })
+        .put(`http://localhost:3000/api/auth/users/${sessionStorage.userId}`, data, this.getters.headers)
         .then((res) => {
           commit("UPDATE_PROFILE", res.data.message);
           commit("RESET_STATE");
@@ -402,11 +414,7 @@ export default createStore({
       }
 
       axios
-        .put(`http://localhost:3000/api/auth/users/${userId}/moderator`, data, {
-          headers: {
-            authorization: `Bearer ${sessionStorage.token}`,
-          },
-        })
+        .put(`http://localhost:3000/api/auth/users/${userId}/moderator`, data, this.getters.headers)
         .then((res) => {
           commit("CHANGE_RIGHTS", res.data.message);
           commit("RESET_STATE");
@@ -420,11 +428,7 @@ export default createStore({
     // supprimer profile(privilège modérateur)
     deleteProfile({ commit }, userId) {
       axios
-        .delete(`http://localhost:3000/api/auth/users/${userId}`, {
-          headers: {
-            authorization: `Bearer ${sessionStorage.token}`,
-          },
-        })
+        .delete(`http://localhost:3000/api/auth/users/${userId}`, this.getters.headers)
         .then((res) => {
           commit("CHANGE_RIGHTS", res.data.message);
           commit("RESET_STATE");
@@ -438,11 +442,7 @@ export default createStore({
     // supprimer le profile
     deleteCurrentProfile({ commit }) {
       axios
-        .delete(`http://localhost:3000/api/auth/users/${sessionStorage.userId}`, {
-          headers: {
-            authorization: `Bearer ${sessionStorage.token}`,
-          },
-        })
+        .delete(`http://localhost:3000/api/auth/users/${sessionStorage.userId}`, this.getters.headers)
         .then(() => {
           sessionStorage.clear();
         })
@@ -450,6 +450,7 @@ export default createStore({
           commit("ERROR_API", err.response.data.error);
         });
     },
+    // ------- fin contrôle des utilisteurs ------- //
   },
 
   modules: {},
