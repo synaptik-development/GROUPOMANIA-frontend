@@ -38,9 +38,15 @@
     <!-- membres du réseau (liens pour voir le profil) -->
     <div class="members">
       <h3>MEMBERS</h3>
-      <a :key="user.id" v-for="user in users" @click="getUser(user.id)">{{
-        user.username
-      }}</a>
+      <a
+        :key="user"
+        v-for="user in users"
+        @click="
+          getUser(user.id);
+          openUserProfile();
+        "
+        >{{ user.username }}</a
+      >
     </div>
     <!-- fin membres du réseau -->
   </nav>
@@ -75,7 +81,6 @@
         id="close-nav"
         @click="
           closeUserProfile();
-          resetState();
         "
       ></i>
       <p>
@@ -96,7 +101,7 @@
 
       <!-- liens utiles(réservé profils modérateurs) -->
       <div v-if="currentUserIsAdmin" class="management">
-        <a @click="changeUserRights(userId)">change rights</a>
+        <a @click="closeUserProfile(); changeUserRights(userId)">change rights</a>
         <a @click="deleteProfile(userId)">delete user</a>
       </div>
       <!-- fin liens utiles  -->
@@ -122,6 +127,7 @@ export default {
       "currentUserUpdatedAt",
       "createdAt",
       "adminMessage",
+      "messages",
     ]),
 
     ...mapState([
@@ -132,7 +138,6 @@ export default {
       "username",
       "admin",
       "errorMessage",
-      "resetState",
     ]),
   },
 
@@ -168,6 +173,11 @@ export default {
       document.getElementById("sidebar").style.transform = "translateX(-300px)";
       document.getElementById("close-nav").style.visibility = "hidden";
       document.getElementById("open-nav").style.visibility = "visible";
+    },
+
+    // ouvrir fenêtre profil utilisateur
+    openUserProfile() {
+      document.querySelector(".user-profil").style.display = "flex";
     },
 
     // fermer fenêtre profil utilisateur

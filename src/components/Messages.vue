@@ -118,7 +118,6 @@ export default {
 
   methods: {
     ...mapActions([
-      "getAllMessages",
       "postMessage",
       "processFile",
       "updateMessage",

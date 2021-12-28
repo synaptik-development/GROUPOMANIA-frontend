@@ -117,6 +117,11 @@ export default createStore({
     ERROR_API(state, errorMessage) {
       state.errorMessage = errorMessage;
     },
+
+    DELETE_MESSAGE(state, messageId) {
+      const message = state.messages.findIndex(message => message.id === messageId)
+      state.messages.splice(message, 1)
+    },
     // ------- fin utils ------- //
 
     // ------------------------------------- //
@@ -126,8 +131,7 @@ export default createStore({
     },
 
     POST_MESSAGE(state, message) {
-      state.messages.push(message);
-      // location.reload();
+      state.messages.unshift(message);
     },
     // ------- fin contrôle des messages ------- //
 
@@ -136,7 +140,6 @@ export default createStore({
     LOGIN(state, data) {
       sessionStorage.setItem("token", data.token);
       sessionStorage.setItem("userId", data.userId);
-      window.location.hash = "/newswall";
     },
 
     GET_USERS(state, users) {
@@ -167,22 +170,21 @@ export default createStore({
 
     UPDATE_PROFILE(state, message) {
       alert(message);
-      window.location.hash = "/newswall";
     },
 
     CHANGE_RIGHTS(state, message) {
       alert(message);
-      location.reload();
     },
 
     GET_COMMENTS(state, comments) {
-      if(comments[0]) {
-      state.comments = comments;
-      }else {state.comments = "no comments";}
+      if (comments[0]) {
+        state.comments = comments;
+      } else {
+        state.comments = "no comments";
+      }
     },
   },
 
-  
   // --------------------------------------------------------------------------------------------
   // actions
   // --------------------------------------------------------------------------------------------
@@ -203,13 +205,6 @@ export default createStore({
 
     // ------------------------------------- //
     // ------- contrôle des messages ------- //
-
-    // // chercher tous les messages
-    // getAllMessages({ commit }) {
-    //   axios.get("http://localhost:3000/api/messages", this.getters.headers).then((res) => {
-    //     commit("GET_MESSAGES", res.data);
-    //   });
-    // },
 
     // chercher tous les messages
     async getAllMessages({ commit }) {
@@ -240,68 +235,43 @@ export default createStore({
       }
     },
 
-    // // poster un message
-    // postMessage({ commit }) {
-    //   const formData = new FormData();
-
-    //   if (this.state.content) {
-    //     formData.append("content", this.state.content);
-    //   }
-    //   if (this.state.image) {
-    //     formData.append("image", this.state.image);
-    //   }
-    //   axios
-    //     .post("http://localhost:3000/api/messages", formData, this.getters.headers)
-    //     .then((res) => {
-    //       commit("POST_MESSAGE", res.data);
-    //       document.getElementById("post-message").style.display = "none";
-    //     })
-    //     .catch((err) => {
-    //       commit("ERROR_API", err.response.data.error);
-    //     });
-    // },
-
     // modifier un message
-    updateMessage({ commit }, messageId) {
-      const data = new FormData();
+    async updateMessage({ commit }, messageId) {
+      const formData = new FormData();
       if (this.state.content) {
-        data.append("content", this.state.content);
+        formData.append("content", this.state.content);
       }
       if (this.state.image) {
-        data.append("image", this.state.image);
+        formData.append("image", this.state.image);
       }
-      axios
-        .put(`http://localhost:3000/api/messages/${messageId}`, data, this.getters.headers)
-        .then(() => {
-          commit("RESET_STATE");
-        })
-        .catch((err) => {
-          commit("ERROR_API", err.response.data.error);
-        });
+      try {
+        await functionsUtils.putHTTP(`http://localhost:3000/api/messages/${messageId}`, formData);
+        commit("RESET_STATE");
+      } catch (err) {
+        commit("ERROR_API", err.response.data.error);
+      }
     },
 
     // supprimer un message
-    deleteMessage({ commit }, messageId) {
-      axios
-        .delete(`http://localhost:3000/api/messages/${messageId}`, this.getters.headers)
-        .then(() => {
-          location.reload();
-        })
-        .catch((err) => {
-          commit("ERROR_API", err.response.data.error);
-        });
+    async deleteMessage({ commit }, messageId) {
+      try {
+        await functionsUtils.deleteHTTP(`http://localhost:3000/api/messages/${messageId}`);
+        commit("DELETE_MESSAGE", messageId);
+      } catch (err) {
+        commit("ERROR_API", err.response.data.error);
+      }
     },
     // ------- fin contrôle des messages ------- //
 
     // ------------------------------------- //
     // ------- contrôle des commentaires ------- //
     async getComments({ commit }, messageId) {
-        try {
-          const data = await functionsUtils.getHTTP(`http://localhost:3000/api/messages/${messageId}/comments`);
-          commit("GET_COMMENTS", data);
-        } catch (err) {
-          commit("ERROR_API", err.response.data.error);
-        }
+      try {
+        const data = await functionsUtils.getHTTP(`http://localhost:3000/api/messages/${messageId}/comments`);
+        commit("GET_COMMENTS", data);
+      } catch (err) {
+        commit("ERROR_API", err.response.data.error);
+      }
     },
     // ------- fin contrôle des commentaires ------- //
 
@@ -322,6 +292,7 @@ export default createStore({
         .then((res) => {
           commit("LOGIN", res.data);
           commit("RESET_STATE");
+          window.location.hash = "/newswall";
         })
         .catch((err) => {
           commit("ERROR_API", err.response.data.error);
@@ -354,101 +325,100 @@ export default createStore({
     },
 
     // chercher membres réseau
-    getAllUsers({ commit }) {
-      axios.get("http://localhost:3000/api/auth/users", this.getters.headers).then((res) => {
-        commit("GET_USERS", res.data);
-      });
+    async getAllUsers({ commit }) {
+      try{
+        const data = await functionsUtils.getHTTP("http://localhost:3000/api/auth/users")
+        commit("GET_USERS", data);
+      }catch (err) {
+        commit("ERROR_API", err.response.data.error);
+      }
     },
 
     // voir le profile d'un utilisateur
-    getUser({ commit }, userId) {
-      axios.get(`http://localhost:3000/api/auth/users/${userId}`, this.getters.headers).then((res) => {
-        commit("GET_USER", res.data.userFound);
-        document.querySelector(".user-profil").style.display = "flex";
-      });
+    async getUser({ commit }, userId) {
+      try{
+        const data = await functionsUtils.getHTTP(`http://localhost:3000/api/auth/users/${userId}`)
+        commit("GET_USER", data.userFound);
+      }catch (err) {
+        commit("ERROR_API", err.response.data.error);
+      }
     },
 
     // profil connecté
-    getCurrentProfile({ commit }) {
-      axios.get(`http://localhost:3000/api/auth/users/${sessionStorage.userId}`, this.getters.headers).then((res) => {
-        commit("GET_CURRENT_PROFILE", res.data.userFound);
-      });
+    async getCurrentProfile({ commit }) {
+      try{
+        const data = await functionsUtils.getHTTP(`http://localhost:3000/api/auth/users/${sessionStorage.userId}`)
+        commit("GET_CURRENT_PROFILE", data.userFound);
+        window.location.hash = "/newswall";
+      }catch (err) {
+        commit("ERROR_API", err.response.data.error);
+      }
     },
 
     // modifier le profil connecté
-    updateProfile({ commit }) {
-      const data = new URLSearchParams();
+    async updateProfile({ commit }) {
+      const urlData = new URLSearchParams();
 
       if (this.state.modelUsername) {
-        data.append("username", this.state.modelUsername);
+        urlData.append("username", this.state.modelUsername);
       }
 
       if (this.state.modelEmail) {
-        data.append("email", this.state.modelEmail);
+        urlData.append("email", this.state.modelEmail);
       }
 
       if (this.state.modelPassword) {
-        data.append("password", this.state.modelPassword);
-        data.append("confirmPassword", this.state.confirmPassword);
+        urlData.append("password", this.state.modelPassword);
+        urlData.append("confirmPassword", this.state.confirmPassword);
       }
 
-      axios
-        .put(`http://localhost:3000/api/auth/users/${sessionStorage.userId}`, data, this.getters.headers)
-        .then((res) => {
-          commit("UPDATE_PROFILE", res.data.message);
-          commit("RESET_STATE");
-        })
-        .catch((err) => {
-          commit("ERROR_API", err.response.data.error);
-        });
+      try{
+        const data = await functionsUtils.putHTTP(`http://localhost:3000/api/auth/users/${sessionStorage.userId}`, urlData,)
+        commit("UPDATE_PROFILE", data.message);
+      }catch (err) {
+        commit("ERROR_API", err.response.data.error);
+      }
     },
 
     // changer les droits utilisateur(privilège modérateur)
-    changeUserRights({ commit }, userId) {
-      const data = new URLSearchParams();
+    async changeUserRights({ commit }, userId) {
+      const urlData = new URLSearchParams();
 
       if (this.state.admin == false) {
-        data.append("admin", true);
+        urlData.append("admin", true);
       } else {
-        data.append("admin", false);
+        urlData.append("admin", false);
       }
 
-      axios
-        .put(`http://localhost:3000/api/auth/users/${userId}/moderator`, data, this.getters.headers)
-        .then((res) => {
-          commit("CHANGE_RIGHTS", res.data.message);
-          commit("RESET_STATE");
-          document.querySelector(".user-profil").style.display = "none";
-        })
-        .catch((err) => {
-          commit("ERROR_API", err.response.data.error);
-        });
+      try{
+        const data = await functionsUtils.putHTTP(`http://localhost:3000/api/auth/users/${userId}/moderator`, urlData,)
+        commit("UPDATE_PROFILE", data.message);
+      }catch (err) {
+        commit("ERROR_API", err.response.data.error);
+      }
     },
 
     // supprimer profile(privilège modérateur)
-    deleteProfile({ commit }, userId) {
-      axios
-        .delete(`http://localhost:3000/api/auth/users/${userId}`, this.getters.headers)
-        .then((res) => {
-          commit("CHANGE_RIGHTS", res.data.message);
-          commit("RESET_STATE");
-          document.querySelector(".user-profil").style.display = "none";
-        })
-        .catch((err) => {
-          commit("ERROR_API", err.response.data.error);
-        });
+    async deleteProfile({ commit }, userId) {
+      try{
+        const data = await functionsUtils.deleteHTTP(`http://localhost:3000/api/auth/users/${userId}`)
+        commit("CHANGE_RIGHTS", data);
+        commit("RESET_STATE");
+        document.querySelector(".user-profil").style.display = "none";
+      }catch (err) {
+        commit("ERROR_API", err.response.data.error);
+      }
     },
 
     // supprimer le profile
-    deleteCurrentProfile({ commit }) {
-      axios
-        .delete(`http://localhost:3000/api/auth/users/${sessionStorage.userId}`, this.getters.headers)
-        .then(() => {
-          sessionStorage.clear();
-        })
-        .catch((err) => {
-          commit("ERROR_API", err.response.data.error);
-        });
+    async deleteCurrentProfile({ commit }) {
+      try{
+        await functionsUtils.deleteHTTP(`http://localhost:3000/api/auth/users/${sessionStorage.userId}`)
+        sessionStorage.clear();
+        window.location.hash = "/";
+      }catch (err) {
+        commit("ERROR_API", err.response.data.error);
+      }
     },
     // ------- fin contrôle des utilisteurs ------- //
   },

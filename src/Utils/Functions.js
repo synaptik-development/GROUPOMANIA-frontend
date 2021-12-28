@@ -10,3 +10,13 @@ exports.postHTTP = async (url, data) => {
   const response = await axios.post(url, data, headers);
   return response.data;
 };
+
+exports.putHTTP = async (url, data) => {
+  const response = await axios.put(url, data, headers);
+  return response.data;
+};
+
+exports.deleteHTTP = async (url) => {
+  const response = await axios.delete(url, headers);
+  return response.data;
+};
