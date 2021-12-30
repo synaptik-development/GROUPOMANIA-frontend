@@ -66,6 +66,12 @@ export default createStore({
       return state.messages;
     },
 
+    users: (state) => {
+      const user = state.users.findIndex((user) => user.id == sessionStorage.userId);
+      state.users.splice(user, 1);
+      return state.users;
+    },
+
     adminMessage: (state) => {
       if (state.currentUserIsAdmin != true) {
         state.adminMessage = "";
@@ -73,6 +79,10 @@ export default createStore({
         state.adminMessage = "moderator profil";
       }
       return state.adminMessage;
+    },
+
+    comments: (state) => {
+      return state.comments;
     },
   },
 
@@ -119,8 +129,8 @@ export default createStore({
     },
 
     DELETE_MESSAGE(state, messageId) {
-      const message = state.messages.findIndex(message => message.id === messageId)
-      state.messages.splice(message, 1)
+      const message = state.messages.findIndex((message) => message.id === messageId);
+      state.messages.splice(message, 1);
     },
     // ------- fin utils ------- //
 
@@ -177,10 +187,10 @@ export default createStore({
     },
 
     GET_COMMENTS(state, comments) {
-      if (comments[0]) {
+      if (comments.length >= 0) {
         state.comments = comments;
       } else {
-        state.comments = "no comments";
+        state.comments = ["no comments"];
       }
     },
   },
@@ -326,31 +336,31 @@ export default createStore({
 
     // chercher membres réseau
     async getAllUsers({ commit }) {
-      try{
-        const data = await functionsUtils.getHTTP("http://localhost:3000/api/auth/users")
+      try {
+        const data = await functionsUtils.getHTTP("http://localhost:3000/api/auth/users");
         commit("GET_USERS", data);
-      }catch (err) {
+      } catch (err) {
         commit("ERROR_API", err.response.data.error);
       }
     },
 
     // voir le profile d'un utilisateur
     async getUser({ commit }, userId) {
-      try{
-        const data = await functionsUtils.getHTTP(`http://localhost:3000/api/auth/users/${userId}`)
+      try {
+        const data = await functionsUtils.getHTTP(`http://localhost:3000/api/auth/users/${userId}`);
         commit("GET_USER", data.userFound);
-      }catch (err) {
+      } catch (err) {
         commit("ERROR_API", err.response.data.error);
       }
     },
 
     // profil connecté
     async getCurrentProfile({ commit }) {
-      try{
-        const data = await functionsUtils.getHTTP(`http://localhost:3000/api/auth/users/${sessionStorage.userId}`)
+      try {
+        const data = await functionsUtils.getHTTP(`http://localhost:3000/api/auth/users/${sessionStorage.userId}`);
         commit("GET_CURRENT_PROFILE", data.userFound);
         window.location.hash = "/newswall";
-      }catch (err) {
+      } catch (err) {
         commit("ERROR_API", err.response.data.error);
       }
     },
@@ -372,10 +382,10 @@ export default createStore({
         urlData.append("confirmPassword", this.state.confirmPassword);
       }
 
-      try{
-        const data = await functionsUtils.putHTTP(`http://localhost:3000/api/auth/users/${sessionStorage.userId}`, urlData,)
+      try {
+        const data = await functionsUtils.putHTTP(`http://localhost:3000/api/auth/users/${sessionStorage.userId}`, urlData);
         commit("UPDATE_PROFILE", data.message);
-      }catch (err) {
+      } catch (err) {
         commit("ERROR_API", err.response.data.error);
       }
     },
@@ -390,33 +400,33 @@ export default createStore({
         urlData.append("admin", false);
       }
 
-      try{
-        const data = await functionsUtils.putHTTP(`http://localhost:3000/api/auth/users/${userId}/moderator`, urlData,)
+      try {
+        const data = await functionsUtils.putHTTP(`http://localhost:3000/api/auth/users/${userId}/moderator`, urlData);
         commit("UPDATE_PROFILE", data.message);
-      }catch (err) {
+      } catch (err) {
         commit("ERROR_API", err.response.data.error);
       }
     },
 
     // supprimer profile(privilège modérateur)
     async deleteProfile({ commit }, userId) {
-      try{
-        const data = await functionsUtils.deleteHTTP(`http://localhost:3000/api/auth/users/${userId}`)
+      try {
+        const data = await functionsUtils.deleteHTTP(`http://localhost:3000/api/auth/users/${userId}`);
         commit("CHANGE_RIGHTS", data);
         commit("RESET_STATE");
         document.querySelector(".user-profil").style.display = "none";
-      }catch (err) {
+      } catch (err) {
         commit("ERROR_API", err.response.data.error);
       }
     },
 
     // supprimer le profile
     async deleteCurrentProfile({ commit }) {
-      try{
-        await functionsUtils.deleteHTTP(`http://localhost:3000/api/auth/users/${sessionStorage.userId}`)
+      try {
+        await functionsUtils.deleteHTTP(`http://localhost:3000/api/auth/users/${sessionStorage.userId}`);
         sessionStorage.clear();
         window.location.hash = "/";
-      }catch (err) {
+      } catch (err) {
         commit("ERROR_API", err.response.data.error);
       }
     },

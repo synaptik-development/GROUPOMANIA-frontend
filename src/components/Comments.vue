@@ -2,61 +2,35 @@
   <!-- formulaire poster un commentaire -->
   <div class="comment-edit">
     <form class="form-comment">
-      <textarea
-        v-model="content"
-        name="comment"
-        id="comment"
-        placeholder="post a comment"
-      ></textarea>
-      <i
-        title="send comment"
-        class="fas fa-paper-plane post-comment"
-        @click="postComment()"
-      ></i>
+      <textarea v-model="content" name="comment" id="comment" placeholder="post a comment"></textarea>
+      <i title="send comment" class="fas fa-paper-plane post-comment" @click="postComment()"></i>
     </form>
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
   </div>
   <!-- fin formulaire poster un commentaire -->
 
   <!-- lien voir commentaires -->
-  <p v-if="comments[0]" class="get-all-comments" @click="showComments()">
-    view comments
-  </p>
+  <p v-if="comments[0]" class="get-all-comments" @click="showComments()">view comments</p>
   <p v-else>No comments</p>
   <!-- lien voir commentaires -->
 
   <!-- commentaires  -->
-  <div v-if="!isEmpty" class="all-comments">
-    <div class="comment-info" :key="item.id" v-for="item in comments">
-      <p
-        v-if="item.userId == currentUserId || currentUserIsAdmin"
-        class="modify-comment"
-        @click="openForm(item.id)"
-      >
-        modify
-      </p>
-      <span>{{ item.username }}</span>
+  <div v-if="!isEmpty" id="all-comments">
+    <div class="comment-info" :key="comment" v-for="comment in comments">
+      <p v-if="comment.userId == currentUserId || currentUserIsAdmin" class="modify-comment" @click="openForm(comment.id)">modify</p>
+      <strong>{{ comment.username }}</strong>
       <br />
-      <span class="comment-content">{{ item.content }}</span>
+      <span class="comment-content">{{ comment.content }}</span>
 
       <!-- formulaire modifier un commentaire -->
-      <form :id="[`formUpdateComment-${item.id}`]" class="form-update-comment">
+      <form :id="[`formUpdateComment-${comment.id}`]" class="form-update-comment">
         <div class="management">
-          <i
-            @click="deleteComment(item.id)"
-            class="fas fa-trash-alt"
-            title="delete comment"
-          ></i>
-          <i @click="closeForm(item.id)" class="far fa-window-close"></i>
+          <i @click="deleteComment(comment.id)" class="fas fa-trash-alt" title="delete comment"></i>
+          <i @click="closeForm(comment.id)" class="far fa-window-close"></i>
         </div>
-        <textarea
-          v-model="content"
-          name="comment"
-          id="comment"
-          :placeholder="[`${item.content}`]"
-        ></textarea>
+        <textarea v-model="newContent" name="comment" id="comment" :placeholder="[`${comment.content}`]"></textarea>
         <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
-        <SubmitButton @click="updateComment(item.id)">UPDATE</SubmitButton>
+        <SubmitButton @click="updateComment(comment.id)">UPDATE</SubmitButton>
       </form>
       <!-- fin formulaire modifier un commentaire -->
     </div>
@@ -66,8 +40,8 @@
 
 <script>
 // imports
-import axios from "axios";
 import SubmitButton from "./SubmitButton.vue";
+import functionsUtils from "../Utils/Functions";
 import { mapState } from "vuex";
 
 export default {
@@ -78,6 +52,7 @@ export default {
     return {
       comments: [],
       isEmpty: true,
+      newContent: "",
       content: "",
       errorMessage: "",
     };
@@ -93,24 +68,19 @@ export default {
     },
   },
 
-  beforeMount() {
+  mounted() {
     this.getAllComments();
   },
 
   methods: {
     // chercher tous les commentaires
-    getAllComments() {
-      axios
-        .get(`http://localhost:3000/api/messages/${this.messageId}/comments`, {
-          headers: {
-            authorization: `Bearer ${sessionStorage.token}`,
-          },
-        })
-        .then((res) => {
-          res.data.forEach((comment) => {
-            this.comments.push(comment);
-          });
-        });
+    async getAllComments() {
+      try {
+        const data = await functionsUtils.getHTTP(`http://localhost:3000/api/messages/${this.messageId}/comments`);
+        this.comments = data;
+      } catch (err) {
+        console.log(err.response.data.error);
+      }
     },
 
     // voir les commentaires
@@ -123,88 +93,49 @@ export default {
     },
 
     // poster un commentaire
-    postComment() {
-      const data = { content: this.content };
-      axios
-        .post(
-          `http://localhost:3000/api/messages/${this.messageId}/comments`,
-          data,
-          {
-            headers: {
-              authorization: `Bearer ${sessionStorage.token}`,
-            },
-          }
-        )
-        .then(() => {
-          location.reload();
-        })
-        .catch((error) => {
-          this.errorMessage = error.response.data.error;
-        });
+    async postComment() {
+      const urlData = { content: this.content };
+
+      try {
+        const data = await functionsUtils.postHTTP(`http://localhost:3000/api/messages/${this.messageId}/comments`, urlData);
+        this.comments.unshift(data);
+        this.content = "";
+      } catch (err) {
+        this.errorMessage = err.response.data.error;
+      }
     },
 
     // modifier un commentaire
-    updateComment(commentId) {
-      const data = { content: this.content };
-      axios
-        .put(
-          `http://localhost:3000/api/messages/${this.messageId}/comments/${commentId}`,
-          data,
-          {
-            headers: {
-              authorization: `Bearer ${sessionStorage.token}`,
-            },
-          }
-        )
-        .then(() => {
-          alert("comment successfully updated");
-        })
-        .catch((error) => {
-          this.errorMessage = error.response.data.error;
-        });
+    async updateComment(commentId) {
+      const urlData = { content: this.newContent };
+
+      try {
+        const data = await functionsUtils.putHTTP(`http://localhost:3000/api/messages/${this.messageId}/comments/${commentId}`, urlData);
+        alert(data.message);
+      } catch (err) {
+        this.errorMessage = err.response.data.error;
+      }
     },
 
     // supprimer un commentaire
-    deleteComment(commentId) {
-      axios
-        .delete(
-          `http://localhost:3000/api/messages/${this.messageId}/comments/${commentId}`,
-          {
-            headers: {
-              authorization: `Bearer ${sessionStorage.token}`,
-            },
-          }
-        )
-        .then(() => {
-          alert("comment deleted successfully");
-        })
-        .catch((error) => {
-          this.errorMessage = error.response.data.error;
-        });
+    async deleteComment(commentId) {
+      try {
+        const data = await functionsUtils.deleteHTTP(`http://localhost:3000/api/messages/${this.messageId}/comments/${commentId}`);
+        alert(data.message);
+      } catch (err) {
+        this.errorMessage = err.response.data.error;
+      }
     },
 
     // ouvrir le formulaire "formUpdateComment-:commentId"
     openForm(commentId) {
-      let form = document.getElementById(`formUpdateComment-${commentId}`);
-
-      axios
-        .get(
-          `http://localhost:3000/api/messages/${this.messageId}/comments/${commentId}`,
-          {
-            headers: {
-              authorization: `Bearer ${sessionStorage.token}`,
-            },
-          }
-        )
-        .then(() => {
-          form.style.display = "flex";
-        });
+      document.getElementById(`formUpdateComment-${commentId}`).style.display = "flex";
     },
 
     // fermer le formulaire "formUpdateComment-:commentId"
     closeForm(commentId) {
-      let form = document.getElementById(`formUpdateComment-${commentId}`);
-      form.style.display = "none";
+      document.getElementById(`formUpdateComment-${commentId}`).style.display = "none";
+      this.errorMessage = "";
     },
   },
 };
@@ -290,21 +221,16 @@ export default {
   }
 }
 
-.all-comments {
+#all-comments {
   position: relative;
-  border: 1px solid gray;
   display: flex;
   gap: 1rem;
   flex-direction: column;
   justify-content: flex-start;
-  border-radius: 1rem;
-  box-shadow: 1px 1px 2px #2c3e50;
-  padding: 1rem;
   margin-bottom: 1rem;
-  background-color: #f2f2f2;
 
   .comment-info {
-    background-color: white;
+    background-color: #f2f2f2;
     position: relative;
     display: block;
     border-radius: 0.5rem;
@@ -319,13 +245,11 @@ export default {
         color: orchid;
       }
     }
-    span {
+    strong {
       font-size: 0.8rem;
-      color: #2c3e50;
     }
     .comment-content {
-      color: black;
-      font-size: 1rem;
+      font-size: 0.8rem;
     }
   }
 }

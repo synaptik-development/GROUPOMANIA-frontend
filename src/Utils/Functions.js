@@ -1,5 +1,5 @@
 const { default: axios } = require("axios");
-const headers = { headers: { authorization: `Bearer ${sessionStorage.token}` } }
+const headers = { headers: { authorization: `Bearer ${sessionStorage.token}` } };
 
 exports.getHTTP = async (url) => {
   const response = await axios.get(url, headers);

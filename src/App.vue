@@ -2,7 +2,7 @@
   <header>
     <img src="./assets/images/icon-left-font.png" alt="groupomania" />
 
-    <router-link to="/"><i title="log out" @click="logOut();" class="fas fa-sign-out-alt"></i></router-link>
+    <router-link to="/"><i title="log out" @click="logOut()" class="fas fa-sign-out-alt"></i></router-link>
   </header>
 
   <router-view />
@@ -51,7 +51,7 @@ header {
 
 i {
   font-size: 1.5rem;
-  color: #FD2D01;
+  color: #fd2d01;
 }
 
 #form-user {

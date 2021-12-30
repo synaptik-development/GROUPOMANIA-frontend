@@ -1,46 +1,17 @@
 <template>
   <div class="home">
     <div class="login-window">
-      <img
-        src="../assets/images/icon-left-font-monochrome-black.png"
-        alt="logo groupomania"
-      />
+      <img src="../assets/images/icon-left-font-monochrome-black.png" alt="logo groupomania" />
       <h1>THE SOCIAL NETWORK</h1>
       <h2 v-if="!formRegister">login</h2>
       <h2 v-if="formRegister">create new account</h2>
 
       <!-- formulaire de connexion / inscription -->
       <form id="form-user">
-        <input
-          v-model="modelEmail"
-          type="email"
-          name="email"
-          id="email"
-          placeholder="email"
-        />
-        <input
-          v-if="formRegister"
-          v-model="modelUsername"
-          type="text"
-          name="username"
-          id="username"
-          placeholder="username"
-        />
-        <input
-          v-model="modelPassword"
-          type="password"
-          name="password"
-          id="password"
-          placeholder="password"
-        />
-        <input
-          v-if="formRegister"
-          v-model="confirmPassword"
-          type="password"
-          name="confirm-password"
-          id="confirm-password"
-          placeholder="confirm password"
-        />
+        <input v-model="modelEmail" type="email" name="email" id="email" placeholder="email" />
+        <input v-if="formRegister" v-model="modelUsername" type="text" name="username" id="username" placeholder="username" />
+        <input v-model="modelPassword" type="password" name="password" id="password" placeholder="password" />
+        <input v-if="formRegister" v-model="confirmPassword" type="password" name="confirm-password" id="confirm-password" placeholder="confirm password" />
         <p class="error-message" v-if="errorMessage != null">
           {{ errorMessage }}
         </p>
@@ -48,12 +19,24 @@
       <!-- fin formulaire de connexion / inscription -->
 
       <SubmitButton v-if="!formRegister" @click="sendLogin()">LOGIN</SubmitButton>
-      <SubmitButton v-if="formRegister" @click="sendRegister()"
-        >REGISTER</SubmitButton
-      >
+      <SubmitButton v-if="formRegister" @click="sendRegister()">REGISTER</SubmitButton>
       <p>or</p>
-      <a @click="showFormRegister(); resetState();" v-if="formRegister">login</a>
-      <a @click="showFormRegister(); resetState();" v-if="!formRegister">create account</a>
+      <a
+        @click="
+          showFormRegister();
+          resetState();
+        "
+        v-if="formRegister"
+        >login</a
+      >
+      <a
+        @click="
+          showFormRegister();
+          resetState();
+        "
+        v-if="!formRegister"
+        >create account</a
+      >
     </div>
   </div>
 </template>

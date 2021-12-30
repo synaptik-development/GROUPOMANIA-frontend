@@ -75,9 +75,9 @@ export default {
         urlData = { like: 0 };
         try {
           const data = await functionsUtils.postHTTP(`http://localhost:3000/api/messages/${this.messageId}/likes`, urlData);
-          console.log(data.message)
+          console.log(data.message);
           this.isliked = false;
-          this.likes--
+          this.likes--;
         } catch (err) {
           console.log(err.response.data.error);
         }
@@ -85,9 +85,9 @@ export default {
         urlData = { like: 1 };
         try {
           const data = await functionsUtils.postHTTP(`http://localhost:3000/api/messages/${this.messageId}/likes`, urlData);
-          console.log(data.message)
+          console.log(data.message);
           this.isliked = true;
-          this.likes++
+          this.likes++;
         } catch (err) {
           console.log(err.response.data.error);
         }

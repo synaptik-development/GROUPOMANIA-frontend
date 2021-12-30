@@ -4,9 +4,7 @@
     <main class="edit-profile">
       <div class="management">
         <strong @click="confirmDelete()">delete profile</strong>
-        <router-link to="/newsWall" @click="resetState()"
-          ><i class="far fa-window-close"></i
-        ></router-link>
+        <router-link to="/newsWall" @click="resetState()"><i class="far fa-window-close"></i></router-link>
         <router-view />
       </div>
 
@@ -15,13 +13,7 @@
         <h3>USERNAME</h3>
         {{ currentUsername }}
         <span @click="showInput(`username`)">edit</span>
-        <input
-          v-model="modelUsername"
-          type="text"
-          name="username"
-          id="username"
-          placeholder="username"
-        />
+        <input v-model="modelUsername" type="text" name="username" id="username" placeholder="username" />
       </div>
       <!-- fin section username  -->
 
@@ -30,13 +22,7 @@
         <h3>EMAIL</h3>
         {{ currentUserEmail }}
         <span @click="showInput(`email`)">edit</span>
-        <input
-          v-model="modelEmail"
-          type="email"
-          name="email"
-          id="email"
-          placeholder="email"
-        />
+        <input v-model="modelEmail" type="email" name="email" id="email" placeholder="email" />
       </div>
       <!-- fin section email  -->
 
@@ -44,21 +30,15 @@
       <div>
         <h3>PASSWORD</h3>
         ********
-        <span @click="showInput(`password`); showInput(`confirm-password`)">edit</span>
-        <input
-          v-model="modelPassword"
-          type="password"
-          name="password"
-          id="password"
-          placeholder="password"
-        /><br />
-        <input
-          v-model="confirmPassword"
-          type="password"
-          name="confirm-password"
-          id="confirm-password"
-          placeholder="confirm password"
-        />
+        <span
+          @click="
+            showInput(`password`);
+            showInput(`confirm-password`);
+          "
+          >edit</span
+        >
+        <input v-model="modelPassword" type="password" name="password" id="password" placeholder="password" /><br />
+        <input v-model="confirmPassword" type="password" name="confirm-password" id="confirm-password" placeholder="confirm password" />
       </div>
       <!-- fin section password  -->
 
@@ -79,14 +59,7 @@ export default {
   components: { SubmitButton },
 
   computed: {
-    ...mapState([
-      "currentUsername",
-      "currentUserCreatedAt",
-      "currentUserUpdatedAt",
-      "currentUserIsAdmin",
-      "currentUserEmail",
-      "errorMessage",
-    ]),
+    ...mapState(["currentUsername", "currentUserCreatedAt", "currentUserUpdatedAt", "currentUserIsAdmin", "currentUserEmail", "errorMessage"]),
 
     //propriétés calculées bidirectionnelles
     modelEmail: {
@@ -126,14 +99,14 @@ export default {
     },
   },
 
-  beforeMount() {
+  mounted() {
     this.getCurrentProfile();
   },
 
   methods: {
     ...mapActions(["updateProfile", "resetState", "deleteCurrentProfile", "getCurrentProfile"]),
 
-    // révéler le formulaire 
+    // révéler le formulaire
     showInput(target) {
       let input = document.getElementById(target);
       if (getComputedStyle(input).display != "none") {

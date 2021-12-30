@@ -1,10 +1,7 @@
 <template>
   <!-- sidebar  -->
   <nav id="sidebar" class="sidebar">
-    <img
-      src="../assets/images/icon-left-font-monochrome-white.png"
-      alt="logo groupomania"
-    />
+    <img src="../assets/images/icon-left-font-monochrome-white.png" alt="logo groupomania" />
 
     <!-- profil connecté -->
     <div class="current-profile">
@@ -24,14 +21,8 @@
 
     <!-- liens utiles (voir profil, ouvrir formulaire postMessage) -->
     <div class="action">
-      <router-link to="/profile"
-        ><i title="edit my profile" class="fas fa-id-card-alt"></i
-      ></router-link>
-      <i
-        title="send a message"
-        @click="openPostMessage()"
-        class="fas fa-envelope-open-text"
-      ></i>
+      <router-link to="/profile"><i title="edit my profile" class="fas fa-id-card-alt"></i></router-link>
+      <i title="send a message" @click="openPostMessage()" class="fas fa-envelope-open-text"></i>
     </div>
     <!-- fin liens utiles  -->
 
@@ -54,17 +45,8 @@
 
   <!-- boutons de contrôle de la sidebar  -->
   <div class="sidebar-control">
-    <a
-      ><i class="far fa-window-close" id="close-nav" @click="closeNav()"></i
-    ></a>
-    <a
-      ><i
-        class="fa fa-bars"
-        id="open-nav"
-        @click="openNav"
-        aria-hidden="true"
-      ></i
-    ></a>
+    <a><i class="far fa-window-close" id="close-nav" @click="closeNav()"></i></a>
+    <a><i class="fa fa-bars" id="open-nav" @click="openNav" aria-hidden="true"></i></a>
   </div>
   <!-- fin boutons de contrôle -->
 
@@ -76,13 +58,7 @@
 
     <!-- fenêtre profile de l'utilisateur sélectionné -->
     <div class="user-profil">
-      <i
-        class="far fa-window-close"
-        id="close-nav"
-        @click="
-          closeUserProfile();
-        "
-      ></i>
+      <i class="far fa-window-close" id="close-nav" @click="closeUserProfile()"></i>
       <p>
         <strong>User n°{{ userId }}</strong>
       </p>
@@ -101,7 +77,13 @@
 
       <!-- liens utiles(réservé profils modérateurs) -->
       <div v-if="currentUserIsAdmin" class="management">
-        <a @click="closeUserProfile(); changeUserRights(userId)">change rights</a>
+        <a
+          @click="
+            closeUserProfile();
+            changeUserRights(userId);
+          "
+          >change rights</a
+        >
         <a @click="deleteProfile(userId)">delete user</a>
       </div>
       <!-- fin liens utiles  -->
@@ -122,23 +104,9 @@ export default {
   components: { Messages },
 
   computed: {
-    ...mapGetters([
-      "currentUserCreatedAt",
-      "currentUserUpdatedAt",
-      "createdAt",
-      "adminMessage",
-      "messages",
-    ]),
+    ...mapGetters(["users", "currentUserCreatedAt", "currentUserUpdatedAt", "createdAt", "adminMessage", "messages"]),
 
-    ...mapState([
-      "users",
-      "currentUsername",
-      "currentUserIsAdmin",
-      "userId",
-      "username",
-      "admin",
-      "errorMessage",
-    ]),
+    ...mapState(["currentUsername", "currentUserIsAdmin", "userId", "username", "admin", "errorMessage"]),
   },
 
   mounted() {
@@ -148,14 +116,7 @@ export default {
   },
 
   methods: {
-    ...mapActions([
-      "getAllUsers",
-      "getUser",
-      "changeUserRights",
-      "deleteProfile",
-      "getCurrentProfile",
-      "getAllMessages",
-    ]),
+    ...mapActions(["getAllUsers", "getUser", "changeUserRights", "deleteProfile", "getCurrentProfile", "getAllMessages"]),
 
     // ouvrir formulaire poster un message
     openPostMessage() {
