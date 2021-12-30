@@ -6,13 +6,7 @@
         <br />
         By {{ message.username }}
       </p>
-      <p
-        v-if="message.userId == currentUserId || currentUserIsAdmin"
-        @click="openForm(message.id)"
-        class="modify-message"
-      >
-        modify
-      </p>
+      <p v-if="message.userId == currentUserId || currentUserIsAdmin" @click="openForm(message.id)" class="modify-message">modify</p>
     </div>
     <img v-if="message.imageUrl != null" :src="message.imageUrl" alt="" />
 
@@ -22,25 +16,18 @@
         <p @click="deleteMessage(message.id)">
           <i class="fas fa-trash-alt" title="delete message"></i>
         </p>
-        <i @click="closeForm(message.id); resetState();" class="far fa-window-close"></i>
+        <i
+          @click="
+            closeForm(message.id);
+            resetState();
+          "
+          class="far fa-window-close"
+        ></i>
       </div>
       <div class="form-attachement">
-        <input
-          @change="processFile($event, $event.file)"
-          type="file"
-          id="attachement"
-          name="attachement"
-          title="choose attachement"
-          accept=".png, .jpeg, .jpg, .gif"
-        />
+        <input @change="processFile($event, $event.file)" type="file" id="attachement" name="attachement" title="choose attachement" accept=".png, .jpeg, .jpg, .gif" />
       </div>
-      <textarea
-        v-model="content"
-        name="message"
-        id="message"
-        rows="1"
-        placeholder="update content"
-      ></textarea>
+      <textarea v-model="content" name="message" id="message" rows="1" placeholder="update content"></textarea>
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
       <SubmitButton @click="updateMessage(message.id)">UPDATE</SubmitButton>
     </form>
@@ -48,7 +35,7 @@
 
     <strong>{{ message.content }}</strong>
 
-    <Likes :likes="message.likes" :messageId="message.id" />
+    <Likes :messageId="message.id" />
 
     <Comments :messageId="message.id" />
   </article>
@@ -62,27 +49,11 @@
       "
       class="far fa-window-close"
     ></i>
-    <textarea
-      v-model="content"
-      name="message"
-      id="message"
-      rows="1"
-      placeholder="edit message"
-    ></textarea>
+    <textarea v-model="content" name="message" id="message" rows="1" placeholder="edit message"></textarea>
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
     <div class="form-attachement">
-      <input
-        @change="processFile($event, $event.file)"
-        type="file"
-        id="attachement"
-        name="attachement"
-        accept=".png, .jpeg, .jpg, .gif"
-      />
-      <i
-        title="send message"
-        class="fas fa-paper-plane"
-        @click="postMessage()"
-      ></i>
+      <input @change="processFile($event, $event.file)" type="file" id="attachement" name="attachement" accept=".png, .jpeg, .jpg, .gif" />
+      <i title="send message" class="fas fa-paper-plane" @click="postMessage()"></i>
     </div>
   </form>
   <!-- fin formulaire poster un message -->
@@ -117,13 +88,7 @@ export default {
   },
 
   methods: {
-    ...mapActions([
-      "postMessage",
-      "processFile",
-      "updateMessage",
-      "deleteMessage",
-      "resetState",
-    ]),
+    ...mapActions(["postMessage", "processFile", "updateMessage", "deleteMessage", "resetState"]),
 
     // fermer le formulaire pour poster un message
     closePostMessage() {
@@ -132,14 +97,12 @@ export default {
 
     // ouvrir le formulaire "formUpdateMessage-${messageId}"
     openForm(messageId) {
-      document.getElementById(`formUpdateMessage-${messageId}`).style.display =
-        "flex";
+      document.getElementById(`formUpdateMessage-${messageId}`).style.display = "flex";
     },
 
     // fermer le formulaire "formUpdateMessage-${messageId}"
     closeForm(messageId) {
-      document.getElementById(`formUpdateMessage-${messageId}`).style.display =
-        "none";
+      document.getElementById(`formUpdateMessage-${messageId}`).style.display = "none";
     },
   },
 };

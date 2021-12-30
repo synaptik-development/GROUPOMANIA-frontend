@@ -1,34 +1,26 @@
 <template>
   <p class="like">
-    <i
-      class="fas fa-thumbs-up"
-      v-bind:class="getIfAlreadyLiked"
-      id="icon-like"
-      @click="likeMessage(messageId)"
-    ></i>
+    <i class="fas fa-thumbs-up" v-bind:class="getIfAlreadyLiked" id="icon-like" @click="likeMessage()"></i>
     {{ likes }}
   </p>
 </template>
 
 <script>
 // imports
-import axios from "axios";
+import functionsUtils from "../Utils/Functions";
 
 export default {
   name: "Likes",
 
   data() {
     return {
-      isliked: "",
+      likes: "",
+      isliked: false,
       isActive: "active",
     };
   },
 
   props: {
-    likes: {
-      type: Number,
-      required: true,
-    },
     messageId: {
       type: Number,
       required: true,
@@ -36,10 +28,10 @@ export default {
   },
 
   computed: {
-    // voir si le message est déjà liké par l'utilisateur connecté
+    // adapter couleur de l'icône "like"
     getIfAlreadyLiked() {
       let alreadyLiked;
-      if (this.isliked == sessionStorage.userId) {
+      if (this.isliked == true) {
         alreadyLiked = { active: this.isActive };
       }
       return alreadyLiked;
@@ -47,42 +39,59 @@ export default {
   },
 
   mounted() {
-    this.getWhoLiked(this.messageId);
+    this.getWhoLiked();
+    this.getLikesAmount();
   },
 
   methods: {
-    // voir qui a liké le message
-    getWhoLiked(messageId) {
-      axios
-        .get(`http://localhost:3000/api/messages/${messageId}/likes`, {
-          headers: {
-            authorization: `Bearer ${sessionStorage.token}`,
-          },
-        })
-        .then((res) => {
-          if (res.data) {
-            this.isliked = res.data.userId;
-          }
-        });
+    // voir si le message est déjà liké par l'utilisateur connecté
+    async getWhoLiked() {
+      try {
+        const data = await functionsUtils.getHTTP(`http://localhost:3000/api/messages/${this.messageId}/likes`);
+        if (data != null) {
+          this.isliked = true;
+        } else {
+          this.isliked = false;
+        }
+      } catch (err) {
+        console.log(err.response.data.error);
+      }
+    },
+
+    // voir nombre de likes
+    async getLikesAmount() {
+      try {
+        const data = await functionsUtils.getHTTP(`http://localhost:3000/api/messages/${this.messageId}`);
+        this.likes = data.likes;
+      } catch (err) {
+        console.log(err.response.data.error);
+      }
     },
 
     // liker/retirer-mention
-    likeMessage(messageId) {
-      let data;
-      if (this.isliked != sessionStorage.userId) {
-        data = { like: 1 };
+    async likeMessage() {
+      let urlData;
+      if (this.isliked == true) {
+        urlData = { like: 0 };
+        try {
+          const data = await functionsUtils.postHTTP(`http://localhost:3000/api/messages/${this.messageId}/likes`, urlData);
+          console.log(data.message)
+          this.isliked = false;
+          this.likes--
+        } catch (err) {
+          console.log(err.response.data.error);
+        }
       } else {
-        data = { like: 0 };
+        urlData = { like: 1 };
+        try {
+          const data = await functionsUtils.postHTTP(`http://localhost:3000/api/messages/${this.messageId}/likes`, urlData);
+          console.log(data.message)
+          this.isliked = true;
+          this.likes++
+        } catch (err) {
+          console.log(err.response.data.error);
+        }
       }
-      axios
-        .post(`http://localhost:3000/api/messages/${messageId}/likes`, data, {
-          headers: {
-            authorization: `Bearer ${sessionStorage.token}`,
-          },
-        })
-        .then((res) => {
-          console.log(res.data);
-        });
     },
   },
 };
