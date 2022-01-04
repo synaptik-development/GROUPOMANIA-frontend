@@ -3,7 +3,7 @@
   <div class="comment-edit">
     <form class="form-comment">
       <textarea v-model="content" name="comment" id="comment" placeholder="post a comment"></textarea>
-      <i title="send comment" class="fas fa-paper-plane post-comment" @click="postComment()"></i>
+      <i title="send comment" class="fas fa-paper-plane post-comment" @click.prevent="postComment()"></i>
     </form>
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
   </div>
@@ -25,12 +25,12 @@
       <!-- formulaire modifier un commentaire -->
       <form :id="[`formUpdateComment-${comment.id}`]" class="form-update-comment">
         <div class="management">
-          <i @click="deleteComment(comment.id)" class="fas fa-trash-alt" title="delete comment"></i>
+          <i @click.prevent="deleteComment(comment.id)" class="fas fa-trash-alt" title="delete comment"></i>
           <i @click="closeForm(comment.id)" class="far fa-window-close"></i>
         </div>
         <textarea v-model="newContent" name="comment" id="comment" :placeholder="[`${comment.content}`]"></textarea>
         <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
-        <SubmitButton @click="updateComment(comment.id)">UPDATE</SubmitButton>
+        <SubmitButton @click.prevent="updateComment(comment.id)">UPDATE</SubmitButton>
       </form>
       <!-- fin formulaire modifier un commentaire -->
     </div>
@@ -121,7 +121,10 @@ export default {
     async deleteComment(commentId) {
       try {
         const data = await functionsUtils.deleteHTTP(`http://localhost:3000/api/messages/${this.messageId}/comments/${commentId}`);
+        // const comment = this.comments.indexOf((element) => element.id == commentId);
+        // this.comments.splice(comment, 1);
         alert(data.message);
+        this.closeForm(commentId);
       } catch (err) {
         this.errorMessage = err.response.data.error;
       }

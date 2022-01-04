@@ -1,5 +1,4 @@
 import { createStore } from "vuex";
-import axios from "axios";
 import CryptoJS from "crypto-js";
 import functionsUtils from "../Utils/Functions";
 
@@ -34,8 +33,6 @@ export default createStore({
     createdAt: "",
     admin: false,
     adminMessage: "",
-
-    comments: [],
   },
 
   // --------------------------------------------------------------------------------------------
@@ -79,10 +76,6 @@ export default createStore({
         state.adminMessage = "moderator profil";
       }
       return state.adminMessage;
-    },
-
-    comments: (state) => {
-      return state.comments;
     },
   },
 
@@ -185,14 +178,6 @@ export default createStore({
     CHANGE_RIGHTS(state, message) {
       alert(message);
     },
-
-    GET_COMMENTS(state, comments) {
-      if (comments.length >= 0) {
-        state.comments = comments;
-      } else {
-        state.comments = ["no comments"];
-      }
-    },
   },
 
   // --------------------------------------------------------------------------------------------
@@ -273,65 +258,40 @@ export default createStore({
     },
     // ------- fin contrôle des messages ------- //
 
-    // ------------------------------------- //
-    // ------- contrôle des commentaires ------- //
-    async getComments({ commit }, messageId) {
-      try {
-        const data = await functionsUtils.getHTTP(`http://localhost:3000/api/messages/${messageId}/comments`);
-        commit("GET_COMMENTS", data);
-      } catch (err) {
-        commit("ERROR_API", err.response.data.error);
-      }
-    },
-    // ------- fin contrôle des commentaires ------- //
-
-    // ------------------------------------- //
-    // ------- contrôle des likes ------- //
-    // ------- fin contrôle des likes ------- //
-
     // ------------------------------------------ //
     // ------- contrôle des utilisateurs ------- //
 
     // se connecter
-    sendLogin({ commit }) {
-      axios
-        .post("http://localhost:3000/api/auth/login", {
-          email: this.state.modelEmail,
-          password: this.state.modelPassword,
-        })
-        .then((res) => {
-          commit("LOGIN", res.data);
-          commit("RESET_STATE");
-          window.location.hash = "/newswall";
-        })
-        .catch((err) => {
-          commit("ERROR_API", err.response.data.error);
-        });
+    async login({ commit }) {
+      try {
+        const urlData = { email: this.state.modelEmail, password: this.state.modelPassword };
+        const data = await functionsUtils.postLogin("http://localhost:3000/api/auth/login", urlData);
+        commit("LOGIN", data);
+        commit("RESET_STATE");
+        window.location.hash = "/newswall";
+      } catch (err) {
+        commit("ERROR_API", err.response.data.error);
+      }
     },
 
     // s'inscrire
-    sendRegister({ commit }) {
-      axios
-        .post("http://localhost:3000/api/auth/register", {
-          username: this.state.modelUsername,
-          email: this.state.modelEmail,
-          password: this.state.modelPassword,
-          confirmPassword: this.state.confirmPassword,
-        })
-        .then(() => {
-          axios
-            .post("http://localhost:3000/api/auth/login", {
-              email: this.state.modelEmail,
-              password: this.state.modelPassword,
-            })
-            .then((res) => {
-              commit("LOGIN", res.data);
-              commit("RESET_STATE");
-            });
-        })
-        .catch((err) => {
+    async register({ commit }) {
+      try {
+        const urlData = { username: this.state.modelUsername, email: this.state.modelEmail, password: this.state.modelPassword, confirmPassword: this.state.confirmPassword };
+        await functionsUtils.postLogin("http://localhost:3000/api/auth/register", urlData);
+
+        try {
+          const urlData = { email: this.state.modelEmail, password: this.state.modelPassword };
+          const data = await functionsUtils.postLogin("http://localhost:3000/api/auth/login", urlData);
+          commit("LOGIN", data);
+          commit("RESET_STATE");
+          window.location.hash = "/newswall";
+        } catch (err) {
           commit("ERROR_API", err.response.data.error);
-        });
+        }
+      } catch (err) {
+        commit("ERROR_API", err.response.data.error);
+      }
     },
 
     // chercher membres réseau

@@ -29,7 +29,7 @@
       </div>
       <textarea v-model="content" name="message" id="message" rows="1" placeholder="update content"></textarea>
       <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
-      <SubmitButton @click="updateMessage(message.id)">UPDATE</SubmitButton>
+      <SubmitButton @click.prevent="updateMessage(message.id)">UPDATE</SubmitButton>
     </form>
     <!-- fin formulaire modifier un message -->
 
@@ -53,7 +53,7 @@
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
     <div class="form-attachement">
       <input @change="processFile($event, $event.file)" type="file" id="attachement" name="attachement" accept=".png, .jpeg, .jpg, .gif" />
-      <i title="send message" class="fas fa-paper-plane" @click="postMessage()"></i>
+      <i title="send message" class="fas fa-paper-plane" @click.prevent="postMessage()"></i>
     </div>
   </form>
   <!-- fin formulaire poster un message -->

@@ -18,8 +18,8 @@
       </form>
       <!-- fin formulaire de connexion / inscription -->
 
-      <SubmitButton v-if="!formRegister" @click="sendLogin()">LOGIN</SubmitButton>
-      <SubmitButton v-if="formRegister" @click="sendRegister()">REGISTER</SubmitButton>
+      <SubmitButton v-if="!formRegister" @click="login()">LOGIN</SubmitButton>
+      <SubmitButton v-if="formRegister" @click="register()">REGISTER</SubmitButton>
       <p>or</p>
       <a
         @click="
@@ -99,7 +99,7 @@ export default {
   components: { SubmitButton },
 
   methods: {
-    ...mapActions(["sendLogin", "sendRegister", "resetState"]),
+    ...mapActions(["login", "register", "resetState"]),
 
     // révéler le formulaire d'inscription
     showFormRegister() {
