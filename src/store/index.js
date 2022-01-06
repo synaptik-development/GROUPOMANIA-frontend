@@ -20,30 +20,28 @@ export default createStore({
     content: "",
     image: "",
 
-    // users
-    currentUserId: sessionStorage.userId,
+    // utilisateurs
     users: [],
-    currentUsername: "",
-    currentUserCreatedAt: "",
-    currentUserUpdatedAt: "",
-    currentUserIsAdmin: false,
-    currentUserEmail: "",
     userId: "",
     username: "",
     createdAt: "",
     admin: false,
     adminMessage: "",
+
+    // utilisateur connecté
+    currentUserId: sessionStorage.userId,
+    currentUsername: "",
+    currentUserCreatedAt: "",
+    currentUserUpdatedAt: "",
+    currentUserIsAdmin: false,
+    currentUserEmail: "",
   },
 
   // --------------------------------------------------------------------------------------------
   // getters
   // --------------------------------------------------------------------------------------------
   getters: {
-    headers: (state) => {
-      state.headers = { headers: { authorization: `Bearer ${sessionStorage.token}` } };
-      return state.headers;
-    },
-
+    // retourner les dates au bon format
     currentUserCreatedAt: (state) => {
       return new Date(state.currentUserCreatedAt).toLocaleDateString();
     },
@@ -56,19 +54,14 @@ export default createStore({
       return new Date(state.createdAt).toLocaleDateString();
     },
 
-    messages: (state) => {
-      state.messages.forEach((message) => {
-        message.createdAt = new Date(message.createdAt).toLocaleDateString();
-      });
-      return state.messages;
-    },
-
+    // supprimer l'utilisateur connecté de la liste des utilisateurs visibles dans la sidebar
     users: (state) => {
       const user = state.users.findIndex((user) => user.id == sessionStorage.userId);
       state.users.splice(user, 1);
       return state.users;
     },
 
+    // générer un message si l'utilisateur est connecté avec un profil modérateur
     adminMessage: (state) => {
       if (state.currentUserIsAdmin != true) {
         state.adminMessage = "";
@@ -136,6 +129,11 @@ export default createStore({
     POST_MESSAGE(state, message) {
       state.messages.unshift(message);
     },
+
+    UPDATE_MESSAGE(state, messageUpdated) {
+      const message = state.messages.findIndex((element) => element.id == messageUpdated.id);
+      state.messages.splice(message, 1, messageUpdated);
+    },
     // ------- fin contrôle des messages ------- //
 
     // ------------------------------------------ //
@@ -171,13 +169,14 @@ export default createStore({
       state.currentUserUpdatedAt = userFound.updatedAt;
     },
 
-    UPDATE_PROFILE(state, message) {
-      alert(message);
+    CHANGE_RIGHTS(state) {
+      if (state.admin == false) {
+        state.admin = true;
+      } else {
+        state.admin = false;
+      }
     },
-
-    CHANGE_RIGHTS(state, message) {
-      alert(message);
-    },
+    // ------- fin contrôle des utilisateurs ------- //
   },
 
   // --------------------------------------------------------------------------------------------
@@ -224,6 +223,7 @@ export default createStore({
       try {
         const data = await functionsUtils.postHTTP("http://localhost:3000/api/messages", formData);
         commit("POST_MESSAGE", data);
+        commit("RESET_STATE");
         document.getElementById("post-message").style.display = "none";
       } catch (err) {
         commit("ERROR_API", err.response.data.error);
@@ -240,7 +240,9 @@ export default createStore({
         formData.append("image", this.state.image);
       }
       try {
-        await functionsUtils.putHTTP(`http://localhost:3000/api/messages/${messageId}`, formData);
+        const data = await functionsUtils.putHTTP(`http://localhost:3000/api/messages/${messageId}`, formData);
+        document.getElementById(`formUpdateMessage-${messageId}`).style.display = "none";
+        commit("UPDATE_MESSAGE", data);
         commit("RESET_STATE");
       } catch (err) {
         commit("ERROR_API", err.response.data.error);
@@ -308,7 +310,7 @@ export default createStore({
     async getUser({ commit }, userId) {
       try {
         const data = await functionsUtils.getHTTP(`http://localhost:3000/api/auth/users/${userId}`);
-        commit("GET_USER", data.userFound);
+        commit("GET_USER", data);
       } catch (err) {
         commit("ERROR_API", err.response.data.error);
       }
@@ -318,8 +320,7 @@ export default createStore({
     async getCurrentProfile({ commit }) {
       try {
         const data = await functionsUtils.getHTTP(`http://localhost:3000/api/auth/users/${sessionStorage.userId}`);
-        commit("GET_CURRENT_PROFILE", data.userFound);
-        window.location.hash = "/newswall";
+        commit("GET_CURRENT_PROFILE", data);
       } catch (err) {
         commit("ERROR_API", err.response.data.error);
       }
@@ -344,7 +345,8 @@ export default createStore({
 
       try {
         const data = await functionsUtils.putHTTP(`http://localhost:3000/api/auth/users/${sessionStorage.userId}`, urlData);
-        commit("UPDATE_PROFILE", data.message);
+        commit("GET_CURRENT_PROFILE", data);
+        commit("RESET_STATE");
       } catch (err) {
         commit("ERROR_API", err.response.data.error);
       }
@@ -361,8 +363,8 @@ export default createStore({
       }
 
       try {
-        const data = await functionsUtils.putHTTP(`http://localhost:3000/api/auth/users/${userId}/moderator`, urlData);
-        commit("UPDATE_PROFILE", data.message);
+        await functionsUtils.putHTTP(`http://localhost:3000/api/auth/users/${userId}/moderator`, urlData);
+        commit("CHANGE_RIGHTS");
       } catch (err) {
         commit("ERROR_API", err.response.data.error);
       }

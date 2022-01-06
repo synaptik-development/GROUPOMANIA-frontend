@@ -79,7 +79,6 @@
       <div v-if="currentUserIsAdmin" class="management">
         <a
           @click="
-            closeUserProfile();
             changeUserRights(userId);
           "
           >change rights</a

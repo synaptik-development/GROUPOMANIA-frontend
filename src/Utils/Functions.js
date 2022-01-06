@@ -27,3 +27,7 @@ exports.deleteHTTP = async (url) => {
   const response = await axios.delete(url, headers);
   return response.data;
 };
+
+exports.dateFormater = (date) => {
+  return new Date(date).toLocaleDateString();
+};

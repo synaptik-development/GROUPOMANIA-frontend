@@ -2,7 +2,7 @@
   <article class="card" v-for="message in messages" :key="message.id">
     <div class="post-info">
       <p>
-        Posted on {{ message.createdAt }}
+        Posted on {{ dateFormater(message.createdAt) }}
         <br />
         By {{ message.username }}
       </p>
@@ -16,13 +16,7 @@
         <p @click="deleteMessage(message.id)">
           <i class="fas fa-trash-alt" title="delete message"></i>
         </p>
-        <i
-          @click="
-            closeForm(message.id);
-            resetState();
-          "
-          class="far fa-window-close"
-        ></i>
+        <i @click="closeForm(message.id)" class="far fa-window-close"></i>
       </div>
       <div class="form-attachement">
         <input @change="processFile($event, $event.file)" type="file" id="attachement" name="attachement" title="choose attachement" accept=".png, .jpeg, .jpg, .gif" />
@@ -42,13 +36,7 @@
 
   <!-- formulaire poster un message -->
   <form id="post-message">
-    <i
-      @click="
-        closePostMessage();
-        resetState();
-      "
-      class="far fa-window-close"
-    ></i>
+    <i @click="closePostMessage()" class="far fa-window-close"></i>
     <textarea v-model="content" name="message" id="message" rows="1" placeholder="edit message"></textarea>
     <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
     <div class="form-attachement">
@@ -64,7 +52,7 @@
 import Comments from "./Comments.vue";
 import SubmitButton from "./SubmitButton.vue";
 import Likes from "./Likes.vue";
-import { mapActions, mapGetters, mapState } from "vuex";
+import { mapActions, mapState } from "vuex";
 
 export default {
   name: "Messages",
@@ -72,9 +60,7 @@ export default {
   components: { Comments, SubmitButton, Likes },
 
   computed: {
-    ...mapGetters(["messages"]),
-
-    ...mapState(["currentUserId", "errorMessage", "currentUserIsAdmin"]),
+    ...mapState(["currentUserId", "errorMessage", "currentUserIsAdmin", "messages"]),
 
     //propriétés calculées bidirectionnelles
     content: {
@@ -87,8 +73,16 @@ export default {
     },
   },
 
+  mounted() {
+    this.getAllMessages();
+  },
+
   methods: {
-    ...mapActions(["postMessage", "processFile", "updateMessage", "deleteMessage", "resetState"]),
+    ...mapActions(["postMessage", "processFile", "updateMessage", "deleteMessage", "getAllMessages"]),
+
+    dateFormater(date) {
+      return new Date(date).toLocaleDateString();
+    },
 
     // fermer le formulaire pour poster un message
     closePostMessage() {

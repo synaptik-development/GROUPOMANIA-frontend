@@ -111,7 +111,9 @@ export default {
 
       try {
         const data = await functionsUtils.putHTTP(`http://localhost:3000/api/messages/${this.messageId}/comments/${commentId}`, urlData);
-        alert(data.message);
+        const comment = this.comments.findIndex((element) => element.id == commentId && element.messageId == this.messageId);
+        this.comments.splice(comment, 1, data);
+        this.content = "";
       } catch (err) {
         this.errorMessage = err.response.data.error;
       }
@@ -120,11 +122,9 @@ export default {
     // supprimer un commentaire
     async deleteComment(commentId) {
       try {
-        const data = await functionsUtils.deleteHTTP(`http://localhost:3000/api/messages/${this.messageId}/comments/${commentId}`);
-        // const comment = this.comments.indexOf((element) => element.id == commentId);
-        // this.comments.splice(comment, 1);
-        alert(data.message);
-        this.closeForm(commentId);
+        await functionsUtils.deleteHTTP(`http://localhost:3000/api/messages/${this.messageId}/comments/${commentId}`);
+        const comment = this.comments.findIndex((element) => element.id == commentId && element.messageId == this.messageId);
+        this.comments.splice(comment, 1);
       } catch (err) {
         this.errorMessage = err.response.data.error;
       }
@@ -133,6 +133,7 @@ export default {
     // ouvrir le formulaire "formUpdateComment-:commentId"
     openForm(commentId) {
       document.getElementById(`formUpdateComment-${commentId}`).style.display = "flex";
+      this.errorMessage = "";
     },
 
     // fermer le formulaire "formUpdateComment-:commentId"
