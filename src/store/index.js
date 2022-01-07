@@ -270,7 +270,6 @@ export default createStore({
         const data = await functionsUtils.postLogin("http://localhost:3000/api/auth/login", urlData);
         commit("LOGIN", data);
         commit("RESET_STATE");
-        window.location.hash = "/newswall";
       } catch (err) {
         commit("ERROR_API", err.response.data.error);
       }
@@ -287,13 +286,18 @@ export default createStore({
           const data = await functionsUtils.postLogin("http://localhost:3000/api/auth/login", urlData);
           commit("LOGIN", data);
           commit("RESET_STATE");
-          window.location.hash = "/newswall";
         } catch (err) {
           commit("ERROR_API", err.response.data.error);
         }
       } catch (err) {
         commit("ERROR_API", err.response.data.error);
       }
+    },
+
+    //se déconnecter
+    logout({ commit }) {
+      sessionStorage.clear();
+      commit("RESET_STATE");
     },
 
     // chercher membres réseau

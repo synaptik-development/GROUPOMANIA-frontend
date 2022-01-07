@@ -18,8 +18,8 @@
       </form>
       <!-- fin formulaire de connexion / inscription -->
 
-      <SubmitButton v-if="!formRegister" @click="login()">LOGIN</SubmitButton>
-      <SubmitButton v-if="formRegister" @click="register()">REGISTER</SubmitButton>
+      <router-link to="/newswall"><SubmitButton v-if="!formRegister" @click="login()">LOGIN</SubmitButton></router-link>
+      <router-link to="/newswall"><SubmitButton v-if="formRegister" @click="register()">REGISTER</SubmitButton></router-link>
       <p>or</p>
       <a
         @click="
