@@ -13,7 +13,8 @@ export default createStore({
     modelEmail: "",
     modelPassword: "",
     confirmPassword: "",
-    headers: "",
+    showLink: false,
+    authMessage: "",
 
     // messages
     messages: [],
@@ -108,6 +109,7 @@ export default createStore({
       state.modelUsername = "";
       state.modelPassword = "";
       state.confirmPassword = "";
+      state.showLink = false;
     },
 
     ERROR_API(state, errorMessage) {
@@ -141,6 +143,15 @@ export default createStore({
     LOGIN(state, data) {
       sessionStorage.setItem("token", data.token);
       sessionStorage.setItem("userId", data.userId);
+      state.authMessage = "successful authentication";
+      state.showLink = true;
+    },
+
+    REGISTER(state, data) {
+      sessionStorage.setItem("token", data.token);
+      sessionStorage.setItem("userId", data.userId);
+      state.authMessage = "user successfully registered";
+      state.showLink = true;
     },
 
     GET_USERS(state, users) {
@@ -280,11 +291,10 @@ export default createStore({
       try {
         const urlData = { username: this.state.modelUsername, email: this.state.modelEmail, password: this.state.modelPassword, confirmPassword: this.state.confirmPassword };
         await functionsUtils.postLogin("http://localhost:3000/api/auth/register", urlData);
-
         try {
           const urlData = { email: this.state.modelEmail, password: this.state.modelPassword };
           const data = await functionsUtils.postLogin("http://localhost:3000/api/auth/login", urlData);
-          commit("LOGIN", data);
+          commit("REGISTER", data);
           commit("RESET_STATE");
         } catch (err) {
           commit("ERROR_API", err.response.data.error);

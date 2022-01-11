@@ -3,40 +3,46 @@
     <div class="login-window">
       <img src="../assets/images/icon-left-font-monochrome-black.png" alt="logo groupomania" />
       <h1>THE SOCIAL NETWORK</h1>
-      <h2 v-if="!formRegister">login</h2>
-      <h2 v-if="formRegister">create new account</h2>
+      <div v-if="!showLink">
+        <h2 v-if="!formRegister">login</h2>
+        <h2 v-if="formRegister">create new account</h2>
 
-      <!-- formulaire de connexion / inscription -->
-      <form id="form-user">
-        <input v-model="modelEmail" type="email" name="email" id="email" placeholder="email" />
-        <input v-if="formRegister" v-model="modelUsername" type="text" name="username" id="username" placeholder="username" />
-        <input v-model="modelPassword" type="password" name="password" id="password" placeholder="password" />
-        <input v-if="formRegister" v-model="confirmPassword" type="password" name="confirm-password" id="confirm-password" placeholder="confirm password" />
-        <p class="error-message" v-if="errorMessage != null">
-          {{ errorMessage }}
-        </p>
-      </form>
-      <!-- fin formulaire de connexion / inscription -->
+        <!-- formulaire de connexion / inscription -->
+        <form id="form-user">
+          <input v-model="modelEmail" type="email" name="email" id="email" placeholder="email" />
+          <input v-if="formRegister" v-model="modelUsername" type="text" name="username" id="username" placeholder="username" />
+          <input v-model="modelPassword" type="password" name="password" id="password" placeholder="password" />
+          <input v-if="formRegister" v-model="confirmPassword" type="password" name="confirm-password" id="confirm-password" placeholder="confirm password" />
+          <p class="error-message" v-if="errorMessage != null">
+            {{ errorMessage }}
+          </p>
+        </form>
+        <!-- fin formulaire de connexion / inscription -->
 
-      <router-link to="/newswall"><SubmitButton v-if="!formRegister" @click="login()">LOGIN</SubmitButton></router-link>
-      <router-link to="/newswall"><SubmitButton v-if="formRegister" @click="register()">REGISTER</SubmitButton></router-link>
-      <p>or</p>
-      <a
-        @click="
-          showFormRegister();
-          resetState();
-        "
-        v-if="formRegister"
-        >login</a
-      >
-      <a
-        @click="
-          showFormRegister();
-          resetState();
-        "
-        v-if="!formRegister"
-        >create account</a
-      >
+        <SubmitButton v-if="!formRegister" @click="login()">LOGIN</SubmitButton>
+        <SubmitButton v-if="formRegister" @click="register()">REGISTER</SubmitButton>
+        <p>or</p>
+        <a
+          @click="
+            showFormRegister();
+            resetState();
+          "
+          v-if="formRegister"
+          >login</a
+        >
+        <a
+          @click="
+            showFormRegister();
+            resetState();
+          "
+          v-if="!formRegister"
+          >create account</a
+        >
+      </div>
+      <div v-else>
+        <strong>"{{ authMessage }}"</strong><br /><br />
+        <router-link to="/newswall"><SubmitButton>go to newswall</SubmitButton></router-link>
+      </div>
     </div>
   </div>
 </template>
@@ -56,7 +62,7 @@ export default {
   },
 
   computed: {
-    ...mapState(["errorMessage"]),
+    ...mapState(["errorMessage", "showLink", "authMessage"]),
 
     //propriétés calculées bidirectionnelles
     modelEmail: {
@@ -124,6 +130,7 @@ export default {
     display: flex;
     flex-direction: column;
     align-items: center;
+    text-align: center;
     max-width: 400px;
     height: auto;
     padding: 1rem;

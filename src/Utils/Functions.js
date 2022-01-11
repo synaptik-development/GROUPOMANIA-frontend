@@ -1,9 +1,10 @@
 const { default: axios } = require("axios");
-const headers = { headers: { authorization: `Bearer ${sessionStorage.token}` } };
+let headers = { headers: { authorization: `Bearer ${sessionStorage.token}` } };
 
 // requête sans authentification
 exports.postLogin = async (url, data) => {
   const response = await axios.post(url, data);
+  headers = { headers: { authorization: `Bearer ${response.data.token}` } };
   return response.data;
 };
 
@@ -28,6 +29,3 @@ exports.deleteHTTP = async (url) => {
   return response.data;
 };
 
-exports.dateFormater = (date) => {
-  return new Date(date).toLocaleDateString();
-};
