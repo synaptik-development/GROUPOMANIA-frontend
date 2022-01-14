@@ -408,6 +408,4 @@ export default createStore({
     },
     // ------- fin contrôle des utilisteurs ------- //
   },
-
-  modules: {},
 });
