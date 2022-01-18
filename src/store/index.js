@@ -59,9 +59,7 @@ export default createStore({
 
     // supprimer l'utilisateur connecté de la liste des utilisateurs visibles dans la sidebar
     users: (state) => {
-      const user = state.users.findIndex((user) => user.id == sessionStorage.userId);
-      state.users.splice(user, 1);
-      return state.users;
+      return state.users.filter((user) => user.id != sessionStorage.userId);
     },
 
     // générer un message si l'utilisateur est connecté avec un profil modérateur
@@ -116,11 +114,6 @@ export default createStore({
     ERROR_API(state, errorMessage) {
       state.errorMessage = errorMessage;
     },
-
-    DELETE_MESSAGE(state, messageId) {
-      const message = state.messages.findIndex((message) => message.id === messageId);
-      state.messages.splice(message, 1);
-    },
     // ------- fin utils ------- //
 
     // ------------------------------------- //
@@ -136,6 +129,11 @@ export default createStore({
     UPDATE_MESSAGE(state, messageUpdated) {
       const message = state.messages.findIndex((element) => element.id == messageUpdated.id);
       state.messages.splice(message, 1, messageUpdated);
+    },
+
+    DELETE_MESSAGE(state, messageId) {
+      const message = state.messages.findIndex((message) => message.id === messageId);
+      state.messages.splice(message, 1);
     },
     // ------- fin contrôle des messages ------- //
 
@@ -183,6 +181,11 @@ export default createStore({
       } else {
         state.admin = false;
       }
+    },
+
+    DELETE_PROFIL(state, userId) {
+      const user = state.users.findIndex((element) => element.id == userId);
+      state.users.splice(user, 1);
     },
     // ------- fin contrôle des utilisateurs ------- //
   },
@@ -388,8 +391,8 @@ export default createStore({
     // supprimer profile(privilège modérateur)
     async deleteProfile({ commit }, userId) {
       try {
-        const data = await functionsUtils.deleteHTTP(`http://localhost:3000/api/auth/users/${userId}`);
-        commit("CHANGE_RIGHTS", data);
+        await functionsUtils.deleteHTTP(`http://localhost:3000/api/auth/users/${userId}`);
+        commit("DELETE_PROFIL", userId);
         commit("RESET_STATE");
         document.querySelector(".user-profil").style.display = "none";
       } catch (err) {
