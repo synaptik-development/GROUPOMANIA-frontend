@@ -2,7 +2,7 @@
   <header>
     <img src="./assets/images/icon-left-font.png" alt="groupomania" />
 
-    <router-link to="/"><i title="log out" @click="logout()" class="fas fa-sign-out-alt"></i></router-link>
+    <router-link to="/"><i title="sign out" @click="logout()" class="fas fa-sign-out-alt"></i></router-link>
   </header>
 
   <router-view />

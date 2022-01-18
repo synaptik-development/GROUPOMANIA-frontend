@@ -13,8 +13,7 @@ export default createStore({
     modelEmail: "",
     modelPassword: "",
     confirmPassword: "",
-    showLink: false,
-    authMessage: "",
+    token: sessionStorage.getItem("token") || "",
 
     // messages
     messages: [],
@@ -54,6 +53,9 @@ export default createStore({
     createdAt: (state) => {
       return new Date(state.createdAt).toLocaleDateString();
     },
+
+    // vérifier l'authentification
+    isLoggedIn: (state) => !!state.token,
 
     // supprimer l'utilisateur connecté de la liste des utilisateurs visibles dans la sidebar
     users: (state) => {
@@ -109,7 +111,6 @@ export default createStore({
       state.modelUsername = "";
       state.modelPassword = "";
       state.confirmPassword = "";
-      state.showLink = false;
     },
 
     ERROR_API(state, errorMessage) {
@@ -141,17 +142,13 @@ export default createStore({
     // ------------------------------------------ //
     // ------- contrôle des utilisateurs ------- //
     LOGIN(state, data) {
-      sessionStorage.setItem("token", data.token);
-      sessionStorage.setItem("userId", data.userId);
-      state.authMessage = "successful authentication";
-      state.showLink = true;
+      state.token = data.token;
+      state.userId = data.userId;
+      state.currentUsername = data.username;
     },
 
-    REGISTER(state, data) {
-      sessionStorage.setItem("token", data.token);
-      sessionStorage.setItem("userId", data.userId);
-      state.authMessage = "user successfully registered";
-      state.showLink = true;
+    LOGOUT(state) {
+      state.token = "";
     },
 
     GET_USERS(state, users) {
@@ -279,6 +276,8 @@ export default createStore({
       try {
         const urlData = { email: this.state.modelEmail, password: this.state.modelPassword };
         const data = await functionsUtils.postLogin("http://localhost:3000/api/auth/login", urlData);
+        sessionStorage.setItem("token", data.token);
+        sessionStorage.setItem("userId", data.userId);
         commit("LOGIN", data);
         commit("RESET_STATE");
       } catch (err) {
@@ -294,7 +293,9 @@ export default createStore({
         try {
           const urlData = { email: this.state.modelEmail, password: this.state.modelPassword };
           const data = await functionsUtils.postLogin("http://localhost:3000/api/auth/login", urlData);
-          commit("REGISTER", data);
+          sessionStorage.setItem("token", data.token);
+          sessionStorage.setItem("userId", data.userId);
+          commit("LOGIN", data);
           commit("RESET_STATE");
         } catch (err) {
           commit("ERROR_API", err.response.data.error);
@@ -307,7 +308,7 @@ export default createStore({
     //se déconnecter
     logout({ commit }) {
       sessionStorage.clear();
-      commit("RESET_STATE");
+      commit("LOGOUT"), commit("RESET_STATE");
     },
 
     // chercher membres réseau

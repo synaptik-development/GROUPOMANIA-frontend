@@ -32,6 +32,7 @@
       <a
         :key="user"
         v-for="user in users"
+        title="show profile"
         @click="
           getUser(user.id);
           openUserProfile();
@@ -45,8 +46,8 @@
 
   <!-- boutons de contrôle de la sidebar  -->
   <div class="sidebar-control">
-    <a><i class="far fa-window-close" id="close-nav" @click="closeNav()"></i></a>
-    <a><i class="fa fa-bars" id="open-nav" @click="openNav" aria-hidden="true"></i></a>
+    <a><i class="far fa-window-close" id="close-nav" title="close menu" @click="closeNav()"></i></a>
+    <a><i class="fa fa-bars" id="open-nav" title="open menu" @click="openNav" aria-hidden="true"></i></a>
   </div>
   <!-- fin boutons de contrôle -->
 
@@ -77,12 +78,7 @@
 
       <!-- liens utiles(réservé profils modérateurs) -->
       <div v-if="currentUserIsAdmin" class="management">
-        <a
-          @click="
-            changeUserRights(userId);
-          "
-          >change rights</a
-        >
+        <a @click="changeUserRights(userId)">change rights</a>
         <a @click="deleteProfile(userId)">delete user</a>
       </div>
       <!-- fin liens utiles  -->
@@ -248,7 +244,7 @@ export default {
     top: 100px;
     width: 500px;
     padding: 1rem;
-    box-shadow: 1px 1px 2px #2c3e50;
+    box-shadow: 0 0 2px #2c3e50;
     border: 1px solid #2c3e50;
     background-color: white;
     color: black;

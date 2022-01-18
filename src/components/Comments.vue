@@ -17,7 +17,7 @@
   <!-- commentaires  -->
   <div v-if="!isEmpty" id="all-comments">
     <div class="comment-info" :key="comment" v-for="comment in comments">
-      <p v-if="comment.userId == currentUserId || currentUserIsAdmin" class="modify-comment" @click="openForm(comment.id)">modify</p>
+      <p v-if="comment.userId == currentUserId || currentUserIsAdmin" class="modify-comment" title="modify comment" @click="openForm(comment.id)">modify</p>
       <strong>{{ comment.username }}</strong>
       <br />
       <span class="comment-content">{{ comment.content }}</span>
@@ -155,7 +155,7 @@ export default {
     justify-content: space-between;
     border-radius: 5px;
     border: 1px solid gray;
-    box-shadow: 1px 1px 2px #2c3e50;
+    box-shadow: 0 0 2px #2c3e50;
     textarea {
       resize: none;
       border: none;
@@ -191,7 +191,7 @@ export default {
     resize: none;
     border: none;
     width: 90%;
-    box-shadow: 1px 1px 2px #2c3e50;
+    box-shadow: 0 0 2px #2c3e50;
     align-self: center;
     &:focus {
       border: none;

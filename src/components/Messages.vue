@@ -6,7 +6,7 @@
         <br />
         By {{ message.username }}
       </p>
-      <p v-if="message.userId == currentUserId || currentUserIsAdmin" @click="openForm(message.id)" class="modify-message">modify</p>
+      <p v-if="message.userId == currentUserId || currentUserIsAdmin" title="modify message" @click="openForm(message.id)" class="modify-message">modify</p>
     </div>
     <img v-if="message.imageUrl != null" :src="message.imageUrl" alt="" />
 
@@ -110,7 +110,7 @@ export default {
   display: flex;
   flex-direction: column;
   border-radius: 1rem;
-  box-shadow: 1px 1px 2px #2c3e50;
+  box-shadow: 0 0 2px #2c3e50;
   border: 1px solid #2c3e50;
   padding: 1rem;
   position: relative;
@@ -120,7 +120,7 @@ export default {
     background-color: white;
     padding: 1rem;
     border-radius: 1rem;
-    box-shadow: 1px 1px 2px #2c3e50;
+    box-shadow: 0 0 2px #2c3e50;
     border: 1px solid #2c3e50;
     gap: 1rem;
     position: absolute;
@@ -186,7 +186,7 @@ export default {
     object-fit: cover;
     max-width: 600px;
     height: auto;
-    box-shadow: 1px 1px 2px #2c3e50;
+    box-shadow: 0 0 2px #2c3e50;
     align-self: center;
   }
 
@@ -207,7 +207,7 @@ export default {
   background-color: white;
   padding: 1rem;
   border-radius: 1rem;
-  box-shadow: 1px 1px 2px #2c3e50;
+  box-shadow: 0 0 2px #2c3e50;
   border: 1px solid #2c3e50;
   .error-message {
     color: red;

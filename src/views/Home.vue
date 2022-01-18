@@ -3,7 +3,7 @@
     <div class="login-window">
       <img src="../assets/images/icon-left-font-monochrome-black.png" alt="logo groupomania" />
       <h1>THE SOCIAL NETWORK</h1>
-      <div v-if="!showLink">
+      <div v-if="!isLoggedIn">
         <h2 v-if="!formRegister">login</h2>
         <h2 v-if="formRegister">create new account</h2>
 
@@ -39,9 +39,10 @@
           >create account</a
         >
       </div>
+
       <div v-else>
-        <strong>"{{ authMessage }}"</strong><br /><br />
-        <router-link to="/newswall"><SubmitButton>go to newswall</SubmitButton></router-link>
+        <h2>Welcome {{ currentUsername }}</h2>
+        <router-link to="/newswall"><SubmitButton>go newswall</SubmitButton></router-link>
       </div>
     </div>
   </div>
@@ -50,7 +51,7 @@
 <script>
 // imports
 import SubmitButton from "../components/SubmitButton.vue";
-import { mapActions, mapState } from "vuex";
+import { mapActions, mapGetters, mapState } from "vuex";
 
 export default {
   name: "Home",
@@ -62,7 +63,8 @@ export default {
   },
 
   computed: {
-    ...mapState(["errorMessage", "showLink", "authMessage"]),
+    ...mapState(["errorMessage", "currentUsername"]),
+    ...mapGetters(["isLoggedIn"]),
 
     //propriétés calculées bidirectionnelles
     modelEmail: {
@@ -135,7 +137,7 @@ export default {
     height: auto;
     padding: 1rem;
     border-radius: 1rem;
-    box-shadow: 1px 1px 2px #2c3e50;
+    box-shadow: 0 0 2px #2c3e50;
     margin-top: 5rem;
     margin-left: 2rem;
     padding-top: 2rem;
