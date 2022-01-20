@@ -110,8 +110,9 @@ export default {
   display: flex;
   flex-direction: column;
   border-radius: 1rem;
-  box-shadow: 0 0 2px #2c3e50;
-  border: 1px solid #2c3e50;
+  background-color: #f2f2f2;
+  // box-shadow: 0 0 2px #2c3e50;
+  // border: 1px solid #2c3e50;
   padding: 1rem;
   position: relative;
   @media screen and (max-width: 800px) {
@@ -119,10 +120,12 @@ export default {
     border: none;
     box-shadow: none;
     border-radius: 0;
-    border-top: 1px solid #2c3e50;
-    border-bottom: 1px solid #2c3e50;
-    margin-left: 0;
-    margin-right: 0;
+    margin: 0;
+    padding: 0.5rem;
+    // border-top: 1px solid #2c3e50;
+    // border-bottom: 1px solid #2c3e50;
+    // margin-left: 0;
+    // margin-right: 0;
   }
   .form-update-message {
     display: none;
@@ -194,16 +197,14 @@ export default {
 
   img {
     object-fit: cover;
-    width: 600px;
+    width: 100%;
     height: auto;
-    box-shadow: 0 0 2px #2c3e50;
     align-self: center;
-    @media screen and (max-width: 800px) {
-      width: 100%;
-      margin-left: 0;
-      margin-right: 0;
-      box-shadow: none;
-    }
+    // @media screen and (max-width: 800px) {
+    //   width: 100%;
+    //   margin-left: 0;
+    //   margin-right: 0;
+    // }
   }
 
   strong {
