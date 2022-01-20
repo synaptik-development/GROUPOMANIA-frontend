@@ -53,8 +53,6 @@
 
   <!-- mur d'actualités  -->
   <main class="news-wall">
-    <h1>NEWS WALL</h1>
-
     <Messages />
 
     <!-- fenêtre profile de l'utilisateur sélectionné -->
@@ -126,7 +124,7 @@ export default {
     },
     // fermer sidebar
     closeNav() {
-      document.getElementById("sidebar").style.transform = "translateX(-300px)";
+      document.getElementById("sidebar").style.transform = "translateX(-50vw)";
       document.getElementById("close-nav").style.visibility = "hidden";
       document.getElementById("open-nav").style.visibility = "visible";
     },
@@ -147,19 +145,22 @@ export default {
 <style lang="scss">
 .sidebar {
   color: white;
-  height: 100%;
-  width: 300px;
+  max-height: 100%;
+  width: 50vw;
   position: fixed;
+  bottom: 0;
   top: 70px;
   left: 0;
   background-color: #2c3e50;
   overflow: hidden;
   transition: 0.5s;
   padding-top: 3.75rem;
-  transform: translateX(-300px);
+  transform: translateX(-50vw);
   display: flex;
   flex-direction: column;
   box-shadow: 1px 1px 2px #2c3e50;
+  z-index: 1;
+  overflow-y: scroll;
   img {
     margin: 0.5rem;
     margin-bottom: 1rem;
@@ -177,6 +178,7 @@ export default {
   .members {
     margin-right: 1rem;
     margin-left: 1rem;
+    margin-bottom: 1rem;
     display: flex;
     flex-direction: column;
     h3 {
@@ -205,7 +207,7 @@ export default {
 }
 
 .sidebar-control {
-  z-index: 1;
+  z-index: 2;
   i {
     position: fixed;
     top: 90px;
@@ -226,19 +228,13 @@ export default {
 
 //---------------------------------
 .news-wall {
-  transition: margin-left 0.5s;
-  padding: 1rem;
-  width: calc(max-content + 0.5rem);
+  margin-top: 4.5rem;
   background-color: white;
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: 100%;
   gap: 1.2rem;
-  padding: 2rem;
-  h1 {
-    padding-top: 1rem;
-    text-shadow: 1px 1px 2px #2c3e50;
-  }
   .user-profil {
     position: fixed;
     top: 100px;

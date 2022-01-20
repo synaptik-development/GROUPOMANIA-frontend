@@ -114,6 +114,16 @@ export default {
   border: 1px solid #2c3e50;
   padding: 1rem;
   position: relative;
+  @media screen and (max-width: 800px) {
+    width: 100%;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    border-top: 1px solid #2c3e50;
+    border-bottom: 1px solid #2c3e50;
+    margin-left: 0;
+    margin-right: 0;
+  }
   .form-update-message {
     display: none;
     flex-direction: column;
@@ -184,10 +194,16 @@ export default {
 
   img {
     object-fit: cover;
-    max-width: 600px;
+    width: 600px;
     height: auto;
     box-shadow: 0 0 2px #2c3e50;
     align-self: center;
+    @media screen and (max-width: 800px) {
+      width: 100%;
+      margin-left: 0;
+      margin-right: 0;
+      box-shadow: none;
+    }
   }
 
   strong {
@@ -199,7 +215,9 @@ export default {
 #post-message {
   position: fixed;
   top: 100px;
-  width: 1000px;
+  left: 1rem;
+  right: 1rem;
+  z-index: 2;
   height: auto;
   margin: auto;
   display: none;
