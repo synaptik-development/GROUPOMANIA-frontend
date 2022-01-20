@@ -141,7 +141,7 @@ export default createStore({
     // ------- contrôle des utilisateurs ------- //
     LOGIN(state, data) {
       state.token = data.token;
-      state.userId = data.userId;
+      state.currentUserId = data.userId;
       state.currentUsername = data.username;
     },
 

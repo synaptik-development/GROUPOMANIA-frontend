@@ -1,7 +1,7 @@
 <template>
   <div class="home">
     <div class="login-window">
-      <img src="../assets/images/icon-left-font-monochrome-black.png" alt="logo groupomania" />
+      <img src="../assets/images/icon-left-font-monochrome-black.png" alt="groupomania" />
       <h1>THE SOCIAL NETWORK</h1>
       <div v-if="!isLoggedIn">
         <h2 v-if="!formRegister">login</h2>
@@ -9,10 +9,26 @@
 
         <!-- formulaire de connexion / inscription -->
         <form id="form-user">
-          <input v-model="modelEmail" type="email" name="email" id="email" placeholder="email" />
-          <input v-if="formRegister" v-model="modelUsername" type="text" name="username" id="username" placeholder="username" />
-          <input v-model="modelPassword" type="password" name="password" id="password" placeholder="password" />
-          <input v-if="formRegister" v-model="confirmPassword" type="password" name="confirm-password" id="confirm-password" placeholder="confirm password" />
+          <div class="email">
+            <label for="email">email</label><br>
+            <input v-model="modelEmail" type="email" name="email" id="email" placeholder="sebastien@live.fr" />
+          </div>
+
+          <div class="username">
+            <label v-if="formRegister" for="username">username</label><br>
+            <input v-if="formRegister" v-model="modelUsername" type="text" name="username" id="username" placeholder="Sébastien" />
+          </div>
+
+          <div class="password">
+            <label for="password">password</label><br>
+            <input v-model="modelPassword" type="password" name="password" id="password" placeholder="********" />
+          </div>
+
+          <div class="confirm-password">
+            <label v-if="formRegister" for="confirm-password">confirm password</label><br>
+            <input v-if="formRegister" v-model="confirmPassword" type="password" name="confirm-password" id="confirm-password" placeholder="********" />
+          </div>
+
           <p class="error-message" v-if="errorMessage != null">
             {{ errorMessage }}
           </p>

@@ -232,9 +232,7 @@ export default {
   flex-direction: column;
   justify-content: flex-start;
   margin-bottom: 1rem;
-
   .comment-info {
-    background-color: #f2f2f2;
     position: relative;
     display: block;
     border-radius: 0.5rem;

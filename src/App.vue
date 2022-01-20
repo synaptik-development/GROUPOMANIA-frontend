@@ -41,7 +41,7 @@ header {
   padding-right: 1rem;
   margin: 0;
   align-items: center;
-  box-shadow: 1px 1px 2px #2c3e50;
+  border-bottom: 1px solid #2c3e50;
   img {
     max-width: 200px;
     height: auto;
