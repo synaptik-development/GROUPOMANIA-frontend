@@ -247,6 +247,7 @@ export default {
     display: none;
     flex-direction: column;
     align-items: center;
+    z-index: 1;
     i {
       color: black;
       align-self: flex-end;

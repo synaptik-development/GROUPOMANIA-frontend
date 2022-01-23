@@ -133,13 +133,13 @@ export default {
     // ouvrir le formulaire "formUpdateComment-:commentId"
     openForm(commentId) {
       document.getElementById(`formUpdateComment-${commentId}`).style.display = "flex";
-      this.errorMessage = "";
     },
 
     // fermer le formulaire "formUpdateComment-:commentId"
     closeForm(commentId) {
       document.getElementById(`formUpdateComment-${commentId}`).style.display = "none";
       this.errorMessage = "";
+      this.newContent = "";
     },
   },
 };

@@ -111,6 +111,7 @@ export default {
       let input = document.getElementById(target);
       if (getComputedStyle(input).display != "none") {
         input.style.display = "none";
+        this.resetState();
       } else {
         input.style.display = "block";
       }
